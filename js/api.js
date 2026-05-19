@@ -1,6 +1,6 @@
 /* js/api.js — مشترك بين جميع صفحات الفرونت إند */
  
-const API_BASE = 'https://edra-backend.vercel.app/api';
+const API_BASE = 'https://edra-backend-omega.vercel.app/api';
 // غيّر الرابط أعلاه لرابط الـ backend الحقيقي بعد النشر
  
 function getToken() { return localStorage.getItem('edra_token'); }

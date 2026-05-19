@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/><title>لوحة التحكم — إدراء</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span id="orgName">...</span></div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active"><span class="nav-icon">📊</span>لوحة التحكم</button>
+      <a class="nav-item" href="students.html"><span class="nav-icon">🎓</span>الطلاب</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="userChip"></div>
+      <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 id="dashTitle">📊 لوحة التحكم</h1>
+      <p id="dashSub">جارٍ التحميل...</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="sTotal">—</div>
+        <div class="stat-lbl">إجمالي الطلاب</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-num" id="sArrears">—</div>
+        <div class="stat-lbl">عليهم متأخرات</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-num" id="sOverdue">—</div>
+        <div class="stat-lbl">متأخرين +30 يوم</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-num" id="sSum">—</div>
+        <div class="stat-lbl">مجموع المتأخرات (ريال)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>🔗 روابط سريعة</h2></div>
+      <div class="btn-row">
+        <a href="students.html" class="btn btn-primary">🎓 إدارة الطلاب</a>
+        <a href="students.html?filter=overdue" class="btn btn-danger">⚠️ المتأخرون</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth(['org_admin','superadmin']);
+  if (user) {
+    document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
+    document.getElementById('orgName').textContent  = user.org?.name || '';
+    document.getElementById('dashTitle').textContent = `📊 ${user.org?.name || 'لوحة التحكم'}`;
+    document.getElementById('dashSub').textContent   = `مرحباً ${user.fullName}`;
+  }
+
+  async function loadStats() {
+    try {
+      const d = await apiFetch('/org/stats');
+      document.getElementById('sTotal').textContent   = d.total.toLocaleString('ar-SA');
+      document.getElementById('sArrears').textContent = d.withArrears.toLocaleString('ar-SA');
+      document.getElementById('sOverdue').textContent = d.overdue.toLocaleString('ar-SA');
+      document.getElementById('sSum').textContent     = d.totalArrearsAmount.toLocaleString('ar-SA');
+    } catch(e) { console.error(e); }
+  }
+
+  loadStats();
+</script>
+</body>
+</html>

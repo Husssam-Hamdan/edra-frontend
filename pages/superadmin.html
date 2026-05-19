@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" /><title>السوبر أدمن — إدراء</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span>سوبر أدمن</span></div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showTab('orgs')"><span class="nav-icon">🏛️</span>الجهات</button>
+      <button class="nav-item" onclick="showTab('users')"><span class="nav-icon">👥</span>المستخدمون</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="userChip"></div>
+      <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- ══ تبويب الجهات ══ -->
+    <div id="tabOrgs">
+      <div class="page-header">
+        <h1>🏛️ إدارة الجهات</h1>
+        <p>الجامعات والمعاهد المسجلة في النظام</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h2>الجهات (<span id="orgsCount">0</span>)</h2>
+          <button class="btn btn-primary btn-sm" onclick="openOrgModal()">+ إضافة جهة</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th>#</th><th>اسم الجهة</th><th>المعرف</th><th>الحالة</th><th>تاريخ الإنشاء</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="orgsTbody"><tr><td colspan="6" class="empty-row">جارٍ التحميل...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="orgsPagination"></div>
+      </div>
+    </div>
+
+    <!-- ══ تبويب المستخدمين ══ -->
+    <div id="tabUsers" style="display:none">
+      <div class="page-header">
+        <h1>👥 إدارة المستخدمين</h1>
+        <p>مدخلو البيانات والأدمنز داخل الجهات</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h2>المستخدمون (<span id="usersCount">0</span>)</h2>
+          <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ إضافة مستخدم</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th>#</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الجهة</th><th>الدور</th><th>الحالة</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="usersTbody"><tr><td colspan="7" class="empty-row">جارٍ التحميل...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="usersPagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal إضافة جهة -->
+<div class="modal-overlay" id="orgModal">
+  <div class="modal">
+    <h3>إضافة جهة جديدة</h3>
+    <div class="field"><label>اسم الجهة</label><input id="orgName" placeholder="جامعة الطائف"/></div>
+    <div class="field"><label>المعرف (slug) — حروف إنجليزية وأرقام فقط</label><input id="orgSlug" placeholder="taif-university"/></div>
+    <div class="alert alert-error" id="orgErr" style="display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('orgModal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="createOrg()">إنشاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal إضافة مستخدم -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <h3>إضافة مستخدم جديد</h3>
+    <div class="field-grid">
+      <div class="field"><label>اسم المستخدم</label><input id="uUsername" placeholder="admin_taif"/></div>
+      <div class="field"><label>كلمة المرور</label><input id="uPassword" type="password" placeholder="6 أحرف على الأقل"/></div>
+      <div class="field"><label>الاسم الكامل</label><input id="uFullName" placeholder="محمد العمري"/></div>
+      <div class="field"><label>الدور</label>
+        <select id="uRole">
+          <option value="org_admin">أدمن جهة</option>
+          <option value="data_entry">مدخل بيانات</option>
+        </select>
+      </div>
+      <div class="field field-full"><label>الجهة</label>
+        <select id="uOrg"><option value="">اختر الجهة...</option></select>
+      </div>
+    </div>
+    <div class="alert alert-error" id="userErr" style="display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('userModal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="createUser()">إنشاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth(['superadmin']);
+  if (user) document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
+
+  let orgsPage = 1, usersPage = 1;
+  let allOrgs  = [];
+
+  /* ── تبويبات ── */
+  function showTab(tab) {
+    document.getElementById('tabOrgs').style.display  = tab==='orgs'  ? '' : 'none';
+    document.getElementById('tabUsers').style.display = tab==='users' ? '' : 'none';
+    document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i===(tab==='orgs'?0:1)));
+    if (tab==='orgs')  loadOrgs();
+    if (tab==='users') loadUsers();
+  }
+
+  /* ── الجهات ── */
+  async function loadOrgs() {
+    try {
+      const d = await apiFetch(`/admin/orgs?page=${orgsPage}&limit=20`);
+      allOrgs  = d.orgs;
+      document.getElementById('orgsCount').textContent = d.total;
+      const tbody = document.getElementById('orgsTbody');
+      tbody.innerHTML = d.orgs.length ? d.orgs.map((o,i)=>`
+        <tr>
+          <td>${(orgsPage-1)*20+i+1}</td>
+          <td style="text-align:right">${o.name}</td>
+          <td><code>${o.slug}</code></td>
+          <td><span class="badge ${o.isActive?'badge-green':'badge-red'}">${o.isActive?'مفعّل':'معطّل'}</span></td>
+          <td>${new Date(o.createdAt).toLocaleDateString('ar-SA')}</td>
+          <td>
+            <button class="btn btn-sm ${o.isActive?'btn-danger':'btn-success'}" onclick="toggleOrg('${o._id}')">
+              ${o.isActive?'تعطيل':'تفعيل'}
+            </button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="6" class="empty-row">لا توجد جهات</td></tr>';
+      renderPagination('orgsPagination', d.page, d.pages, p => { orgsPage=p; loadOrgs(); });
+    } catch(e) { alert(e.message); }
+  }
+
+  async function toggleOrg(id) {
+    if (!confirm('تأكيد تغيير حالة الجهة؟')) return;
+    try { await apiFetch(`/admin/orgs/${id}/toggle`, {method:'PATCH'}); loadOrgs(); }
+    catch(e) { alert(e.message); }
+  }
+
+  function openOrgModal() {
+    document.getElementById('orgName').value='';
+    document.getElementById('orgSlug').value='';
+    document.getElementById('orgErr').style.display='none';
+    document.getElementById('orgModal').classList.add('open');
+  }
+
+  async function createOrg() {
+    const name = document.getElementById('orgName').value.trim();
+    const slug = document.getElementById('orgSlug').value.trim();
+    const err  = document.getElementById('orgErr');
+    err.style.display='none';
+    try {
+      await apiFetch('/admin/orgs', {method:'POST', body:{name,slug}});
+      closeModal('orgModal'); loadOrgs();
+    } catch(e) { err.textContent=e.message; err.style.display='block'; }
+  }
+
+  /* ── المستخدمون ── */
+  async function loadUsers() {
+    try {
+      const d = await apiFetch(`/admin/users?page=${usersPage}&limit=20`);
+      document.getElementById('usersCount').textContent = d.total;
+      const roles = { superadmin:'سوبر أدمن', org_admin:'أدمن جهة', data_entry:'مدخل بيانات' };
+      const tbody = document.getElementById('usersTbody');
+      tbody.innerHTML = d.users.length ? d.users.map((u,i)=>`
+        <tr>
+          <td>${(usersPage-1)*20+i+1}</td>
+          <td>${u.username}</td>
+          <td style="text-align:right">${u.fullName}</td>
+          <td>${u.org?.name||'—'}</td>
+          <td><span class="badge badge-blue">${roles[u.role]||u.role}</span></td>
+          <td><span class="badge ${u.isActive?'badge-green':'badge-red'}">${u.isActive?'مفعّل':'معطّل'}</span></td>
+          <td>
+            <button class="btn btn-sm ${u.isActive?'btn-danger':'btn-success'}" onclick="toggleUser('${u._id}')">
+              ${u.isActive?'تعطيل':'تفعيل'}
+            </button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="7" class="empty-row">لا توجد مستخدمون</td></tr>';
+      renderPagination('usersPagination', d.page, d.pages, p => { usersPage=p; loadUsers(); });
+    } catch(e) { alert(e.message); }
+  }
+
+  async function toggleUser(id) {
+    if (!confirm('تأكيد تغيير حالة المستخدم؟')) return;
+    try { await apiFetch(`/admin/users/${id}/toggle`, {method:'PATCH'}); loadUsers(); }
+    catch(e) { alert(e.message); }
+  }
+
+  async function openUserModal() {
+    // تحميل الجهات في السيليكت
+    const sel = document.getElementById('uOrg');
+    sel.innerHTML = '<option value="">اختر الجهة...</option>';
+    try {
+      const d = await apiFetch('/admin/orgs?limit=100');
+      d.orgs.forEach(o => sel.innerHTML += `<option value="${o._id}">${o.name}</option>`);
+    } catch {}
+    ['uUsername','uPassword','uFullName'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('userErr').style.display='none';
+    document.getElementById('userModal').classList.add('open');
+  }
+
+  async function createUser() {
+    const err = document.getElementById('userErr');
+    err.style.display='none';
+    const body = {
+      username: document.getElementById('uUsername').value.trim(),
+      password: document.getElementById('uPassword').value,
+      fullName: document.getElementById('uFullName').value.trim(),
+      role:     document.getElementById('uRole').value,
+      orgId:    document.getElementById('uOrg').value,
+    };
+    try {
+      await apiFetch('/admin/users', {method:'POST', body});
+      closeModal('userModal'); loadUsers();
+    } catch(e) { err.textContent=e.message; err.style.display='block'; }
+  }
+
+  /* ── Pagination helper ── */
+  function renderPagination(containerId, page, pages, cb) {
+    const el = document.getElementById(containerId);
+    if (!el || pages <= 1) { if(el) el.innerHTML=''; return; }
+    let html = `<button class="pg-btn" ${page===1?'disabled':''} onclick="(${cb})(${page-1})">‹</button>`;
+    for (let p=1;p<=pages;p++) html+=`<button class="pg-btn${p===page?' active':''}" onclick="(${cb})(${p})">${p}</button>`;
+    html += `<button class="pg-btn" ${page===pages?'disabled':''} onclick="(${cb})(${page+1})">›</button>`;
+    el.innerHTML = html;
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // تحميل أولي
+  loadOrgs();
+</script>
+</body>
+</html>

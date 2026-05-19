@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/><title>الطلاب — إدراء</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .search-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    .search-bar input { flex:1; min-width:220px; padding:10px 14px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:var(--font); font-size:.9rem; outline:none; }
+    .search-bar input:focus { border-color:var(--accent); }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+    .form-full  { grid-column:1/-1; }
+    .overdue td { background:rgba(248,81,73,.06)!important; }
+    .notify { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--success); color:#fff; padding:12px 24px; border-radius:var(--radius); font-weight:600; z-index:2000; animation:fadeInOut 3s forwards; }
+    @keyframes fadeInOut { 0%{opacity:0;top:30px} 10%{opacity:1;top:20px} 80%{opacity:1} 100%{opacity:0} }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span id="orgName">...</span></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>لوحة التحكم</a>
+      <button class="nav-item active"><span class="nav-icon">🎓</span>الطلاب</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="userChip"></div>
+      <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>🎓 الطلاب</h1>
+      <p>إضافة وإدارة بيانات الطلاب</p>
+    </div>
+
+    <!-- إشعار -->
+    <div id="notifyEl" style="display:none"></div>
+
+    <!-- ══ نموذج الإضافة / التعديل ══ -->
+    <div class="card" id="formCard">
+      <div class="card-header">
+        <h2 id="formTitle">➕ إضافة طالب جديد</h2>
+        <button class="btn btn-ghost btn-sm" onclick="toggleForm()">طيّ ▲</button>
+      </div>
+      <form id="studentForm">
+        <div class="form-grid">
+          <div class="field"><label>الاسم الرباعي <span style="color:var(--danger)">*</span></label>
+            <input id="fName" placeholder="محمد عبدالله الغامدي الزهراني" required/></div>
+          <div class="field"><label>رقم الهوية <span style="color:var(--danger)">*</span></label>
+            <input id="fNationalId" placeholder="1XXXXXXXXX" maxlength="10" inputmode="numeric" required/></div>
+          <div class="field"><label>رقم الجوال <span style="color:var(--danger)">*</span></label>
+            <input id="fPhone" placeholder="05XXXXXXXX" maxlength="12" inputmode="tel" required/></div>
+          <div class="field"><label>جهة العمل</label>
+            <input id="fEmployer" placeholder="وزارة التعليم"/></div>
+          <div class="field"><label>طريقة الدفع</label>
+            <select id="fPayMethod"><option>شبكة</option><option>نقدي</option><option>تحويل</option></select></div>
+          <div class="field"><label>تاريخ الانضمام</label>
+            <input id="fJoinDate" type="date"/></div>
+          <div class="field"><label>تاريخ آخر سداد</label>
+            <input id="fLastPayment" type="date"/></div>
+          <div class="field"><label>عدد مرات السداد</label>
+            <input id="fPayCount" type="number" min="0" value="0"/></div>
+          <div class="field">
+            <label class="checkbox-lbl"><input type="checkbox" id="fHasArrears" onchange="toggleArrears()"/><span>عليه متأخرات</span></label>
+            <input id="fArrearsAmount" placeholder="القيمة بالريال" disabled style="margin-top:8px" inputmode="numeric"/>
+          </div>
+          <div class="field"><label>اسم ملف الهوية</label><input id="fIdFile" placeholder="اسم الملف (اختياري)"/></div>
+          <div class="field"><label>اسم ملف الشهادة</label><input id="fCertFile" placeholder="اسم الملف (اختياري)"/></div>
+          <div class="field form-full"><label>الملاحظات</label><textarea id="fNotes" rows="2" placeholder="..."></textarea></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+          <button type="submit" class="btn btn-primary" id="submitBtn">➕ إضافة</button>
+          <button type="button" class="btn btn-ghost" onclick="clearForm()">مسح النموذج</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ══ البحث ══ -->
+    <div class="card">
+      <div class="search-bar">
+        <input id="searchInput" placeholder="🔍 ابحث بالاسم أو رقم الهوية أو الجوال..." />
+        <button class="btn btn-primary" onclick="doSearch()">بحث</button>
+        <button class="btn btn-ghost"   onclick="showAll()">عرض الكل</button>
+        <button class="btn btn-ghost"   onclick="filterOverdue()">المتأخرين فقط</button>
+      </div>
+      <div id="alertBox"></div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>#</th><th>الاسم</th><th>رقم الهوية</th><th>الجوال</th><th>جهة العمل</th>
+          <th>الهوية</th><th>الشهادة</th><th>الدفع</th><th>المتأخرات</th>
+          <th>آخر سداد</th><th>مرات السداد</th><th>أضافه</th><th>إجراءات</th>
+        </tr></thead>
+        <tbody id="studentsTbody"><tr><td colspan="13" class="empty-row">ابحث لعرض الطلاب</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="studentsPagination"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal تسجيل دفعة -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <h3>💰 تسجيل دفعة</h3>
+    <p id="payStudentName" style="color:var(--text-muted);margin-bottom:16px;font-size:.9rem"></p>
+    <div class="field"><label>المبلغ المسدد (ريال)</label><input id="payAmount" type="number" min="1" placeholder="500"/></div>
+    <div class="field"><label>ملاحظة (اختياري)</label><input id="payNote" placeholder="..."/></div>
+    <div class="alert alert-error" id="payErr" style="display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('payModal')">إلغاء</button>
+      <button class="btn btn-success" onclick="submitPayment()">تسجيل</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth(['org_admin','data_entry']);
+  if (user) {
+    document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
+    document.getElementById('orgName').textContent  = user.org?.name || '';
+  }
+
+  let editId       = null;
+  let currentPage  = 1;
+  let lastQuery    = null; // null = لم يُبحث بعد
+  let payStudentId = null;
+  let formCollapsed= false;
+
+  /* ── قيود إدخال ── */
+  document.getElementById('fNationalId').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,10);
+  });
+  document.getElementById('fPhone').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,12);
+  });
+
+  function toggleArrears() {
+    const chk = document.getElementById('fHasArrears');
+    const amt = document.getElementById('fArrearsAmount');
+    amt.disabled = !chk.checked;
+    if (!chk.checked) amt.value = '';
+  }
+
+  function toggleForm() {
+    formCollapsed = !formCollapsed;
+    const form = document.getElementById('studentForm');
+    form.style.display = formCollapsed ? 'none' : '';
+    document.querySelector('.card-header .btn-ghost').textContent = formCollapsed ? 'فتح ▼' : 'طيّ ▲';
+  }
+
+  /* ── البحث وعرض الكل ── */
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) { showAlert('أدخل نص للبحث.','error'); return; }
+    lastQuery = { q };
+    currentPage = 1;
+    loadStudents();
+  }
+
+  function showAll() {
+    document.getElementById('searchInput').value = '';
+    lastQuery = {};
+    currentPage = 1;
+    loadStudents();
+  }
+
+  function filterOverdue() {
+    lastQuery = { overdue: 'true' };
+    currentPage = 1;
+    loadStudents();
+  }
+
+  /* ── تحميل الطلاب ── */
+  async function loadStudents() {
+    if (lastQuery === null) return; // لا تعرض قبل البحث
+    try {
+      const params = new URLSearchParams({ page: currentPage, limit: 20, ...lastQuery });
+      const d = await apiFetch(`/students?${params}`);
+      renderStudents(d.students, d.total, d.page, d.pages);
+    } catch(e) { showAlert(e.message,'error'); }
+  }
+
+  function renderStudents(list, total, page, pages) {
+    const tbody = document.getElementById('studentsTbody');
+    const now   = Date.now();
+    const ago30 = 30*24*60*60*1000;
+
+    if (!list.length) { tbody.innerHTML='<tr><td colspan="13" class="empty-row">لا توجد نتائج</td></tr>'; renderPag(0,0); return; }
+
+    tbody.innerHTML = list.map((s,i) => {
+      const lp  = s.lastPayment ? new Date(s.lastPayment) : null;
+      const ovd = s.hasArrears && lp && (now-lp.getTime())>=ago30;
+      const lpStr = lp ? lp.toLocaleDateString('ar-SA') : '—';
+      const addedBy = s.createdBy?.fullName || '—';
+      return `<tr class="${ovd?'overdue':''}">
+        <td>${(page-1)*20+i+1}</td>
+        <td style="text-align:right;min-width:140px">${s.name}</td>
+        <td style="direction:ltr">${s.nationalId}</td>
+        <td style="direction:ltr">${s.phone}</td>
+        <td>${s.employer||'—'}</td>
+        <td><span class="badge ${s.idCopyFileName?'badge-green':'badge-gray'}">${s.idCopyFileName?'✓':'—'}</span></td>
+        <td><span class="badge ${s.certFileName?'badge-green':'badge-gray'}">${s.certFileName?'✓':'—'}</span></td>
+        <td><span class="badge badge-blue">${s.paymentMethod}</span></td>
+        <td>${s.hasArrears?`<span class="badge badge-red">${(+s.arrearsAmount).toLocaleString('ar-SA')} ﷼</span>`:'<span class="badge badge-gray">—</span>'}</td>
+        <td>${lpStr}${ovd?`<br><small style="color:var(--danger)">(${Math.floor((now-lp.getTime())/86400000)} يوم)</small>`:''}</td>
+        <td>${s.paymentCount}</td>
+        <td style="font-size:.78rem;color:var(--text-muted)">${addedBy}</td>
+        <td>
+          <div class="btn-row" style="justify-content:center;flex-wrap:nowrap;gap:4px">
+            ${s.hasArrears?`<button class="btn btn-sm btn-success" onclick="openPay('${s._id}','${s.name}')">💰</button>`:''}
+            <button class="btn btn-sm btn-ghost" onclick="editStudent('${s._id}')">✏️</button>
+            ${user.role==='org_admin'?`<button class="btn btn-sm btn-danger" onclick="delStudent('${s._id}')">🗑</button>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    renderPag(pages, page);
+  }
+
+  function renderPag(pages, page) {
+    const el = document.getElementById('studentsPagination');
+    if (!el || pages<=1) { if(el) el.innerHTML=''; return; }
+    let h = `<button class="pg-btn" ${page<=1?'disabled':''} onclick="goPage(${page-1})">‹</button>`;
+    const d=2, left=Math.max(2,page-d), right=Math.min(pages-1,page+d);
+    h+=`<button class="pg-btn${page===1?' active':''}" onclick="goPage(1)">1</button>`;
+    if(left>2) h+=`<span class="pg-dots">…</span>`;
+    for(let p=left;p<=right;p++) h+=`<button class="pg-btn${p===page?' active':''}" onclick="goPage(${p})">${p}</button>`;
+    if(right<pages-1) h+=`<span class="pg-dots">…</span>`;
+    if(pages>1) h+=`<button class="pg-btn${page===pages?' active':''}" onclick="goPage(${pages})">${pages}</button>`;
+    h+=`<button class="pg-btn" ${page>=pages?'disabled':''} onclick="goPage(${page+1})">›</button>`;
+    el.innerHTML = h;
+  }
+
+  function goPage(p) { currentPage=p; loadStudents(); }
+
+  /* ── النموذج ── */
+  document.getElementById('studentForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+
+    const hasArr = document.getElementById('fHasArrears').checked;
+    const body = {
+      name:          document.getElementById('fName').value.trim(),
+      nationalId:    document.getElementById('fNationalId').value.trim(),
+      phone:         document.getElementById('fPhone').value.trim(),
+      employer:      document.getElementById('fEmployer').value.trim(),
+      paymentMethod: document.getElementById('fPayMethod').value,
+      joinDate:      document.getElementById('fJoinDate').value || null,
+      lastPayment:   document.getElementById('fLastPayment').value || null,
+      paymentCount:  +document.getElementById('fPayCount').value || 0,
+      hasArrears:    hasArr,
+      arrearsAmount: hasArr ? (+document.getElementById('fArrearsAmount').value||0) : 0,
+      idCopyFileName:  document.getElementById('fIdFile').value.trim(),
+      certFileName:    document.getElementById('fCertFile').value.trim(),
+      notes:           document.getElementById('fNotes').value.trim(),
+    };
+
+    try {
+      if (editId) {
+        await apiFetch(`/students/${editId}`, { method:'PATCH', body });
+        showNotify('تم حفظ التعديل ✓');
+      } else {
+        await apiFetch('/students', { method:'POST', body });
+        showNotify('تم إضافة الطالب بنجاح ✓');
+      }
+      clearForm();
+      if (lastQuery !== null) loadStudents();
+    } catch(err) {
+      showAlert(err.message,'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function editStudent(id) {
+    try {
+      // جلب بيانات الطالب من نتائج الجدول الحالية (أسرع)
+      const params = new URLSearchParams({ page:currentPage, limit:20, ...lastQuery });
+      const d = await apiFetch(`/students?${params}`);
+      const s = d.students.find(x=>x._id===id);
+      if (!s) return;
+
+      document.getElementById('fName').value         = s.name;
+      document.getElementById('fNationalId').value   = s.nationalId;
+      document.getElementById('fPhone').value        = s.phone;
+      document.getElementById('fEmployer').value     = s.employer||'';
+      document.getElementById('fPayMethod').value    = s.paymentMethod||'شبكة';
+      document.getElementById('fJoinDate').value     = s.joinDate?s.joinDate.slice(0,10):'';
+      document.getElementById('fLastPayment').value  = s.lastPayment?s.lastPayment.slice(0,10):'';
+      document.getElementById('fPayCount').value     = s.paymentCount||0;
+      document.getElementById('fHasArrears').checked = !!s.hasArrears;
+      document.getElementById('fArrearsAmount').value= s.arrearsAmount||0;
+      document.getElementById('fArrearsAmount').disabled = !s.hasArrears;
+      document.getElementById('fIdFile').value       = s.idCopyFileName||'';
+      document.getElementById('fCertFile').value     = s.certFileName||'';
+      document.getElementById('fNotes').value        = s.notes||'';
+      editId = id;
+      document.getElementById('formTitle').textContent = '✏️ تعديل بيانات الطالب';
+      document.getElementById('submitBtn').textContent = '💾 حفظ التعديل';
+      if (formCollapsed) toggleForm();
+      document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
+    } catch(e) { showAlert(e.message,'error'); }
+  }
+
+  async function delStudent(id) {
+    if (!confirm('حذف الطالب؟ لا يمكن التراجع.')) return;
+    try { await apiFetch(`/students/${id}`, {method:'DELETE'}); loadStudents(); }
+    catch(e) { showAlert(e.message,'error'); }
+  }
+
+  function clearForm() {
+    document.getElementById('studentForm').reset();
+    document.getElementById('fArrearsAmount').disabled=true;
+    editId=null;
+    document.getElementById('formTitle').textContent='➕ إضافة طالب جديد';
+    document.getElementById('submitBtn').textContent='➕ إضافة';
+  }
+
+  /* ── الدفعات ── */
+  function openPay(id, name) {
+    payStudentId=id;
+    document.getElementById('payStudentName').textContent=`الطالب: ${name}`;
+    document.getElementById('payAmount').value='';
+    document.getElementById('payNote').value='';
+    document.getElementById('payErr').style.display='none';
+    document.getElementById('payModal').classList.add('open');
+  }
+
+  async function submitPayment() {
+    const amount = +document.getElementById('payAmount').value;
+    const note   = document.getElementById('payNote').value;
+    const err    = document.getElementById('payErr');
+    err.style.display='none';
+    if (!amount||amount<=0) { err.textContent='أدخل مبلغاً صحيحاً.'; err.style.display='block'; return; }
+    try {
+      const d = await apiFetch(`/payments/${payStudentId}`, {method:'POST', body:{amount,note}});
+      closeModal('payModal');
+      showNotify(d.message);
+      loadStudents();
+    } catch(e) { err.textContent=e.message; err.style.display='block'; }
+  }
+
+  /* ── مساعدات UI ── */
+  function showAlert(msg, type='info') {
+    const el = document.getElementById('alertBox');
+    el.innerHTML=`<div class="alert alert-${type==='error'?'error':'info'}">${msg}</div>`;
+    setTimeout(()=>el.innerHTML='',4000);
+  }
+
+  function showNotify(msg) {
+    const el=document.createElement('div');
+    el.className='notify'; el.textContent=msg;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),3000);
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key==='Enter') doSearch();
+  });
+</script>
+</body>
+</html>

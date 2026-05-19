@@ -46,7 +46,7 @@ async function apiFetch(path, options = {}) {
 function requireAuth(allowedRoles) {
   const user = getUser();
   const token = getToken();
-  if (!user || !token) { window.location.href = '/pages/login.html'; return null; }
+  if (!user || !token) { window.location.href = '/edra-frontend/pages/login.html'; return null; }
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     redirectByRole(user.role);
     return null;
@@ -55,12 +55,13 @@ function requireAuth(allowedRoles) {
 }
 
 function redirectByRole(role) {
+  const base = '/edra-frontend';
   const map = {
-    superadmin: '/pages/superadmin.html',
-    org_admin:  '/pages/dashboard.html',
-    data_entry: '/pages/students.html',
+    superadmin: base + '/pages/superadmin.html',
+    org_admin:  base + '/pages/dashboard.html',
+    data_entry: base + '/pages/students.html',
   };
-  window.location.href = map[role] || '/pages/login.html';
+  window.location.href = map[role] || base + '/pages/login.html';
 }
 
 function logout() {

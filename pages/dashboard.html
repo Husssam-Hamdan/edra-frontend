@@ -6,14 +6,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .prog-card {
+      display:flex; align-items:center; gap:14px;
+      background:var(--bg3); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px 16px;
+      margin-bottom:10px; transition:border-color .2s;
+    }
+    .prog-card:hover { border-color:var(--accent); }
+    .prog-info { flex:1; }
+    .prog-name { font-weight:600; font-size:.95rem; }
+    .prog-prices { font-size:.8rem; color:var(--text-muted); margin-top:3px; }
+    .prog-prices span { margin-left:14px; }
+    .prog-active { font-size:.75rem; }
+  </style>
 </head>
 <body>
 <div class="app-shell">
   <aside class="sidebar">
     <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span id="orgName">...</span></div>
     <nav class="sidebar-nav">
-      <button class="nav-item active"><span class="nav-icon">📊</span>لوحة التحكم</button>
+      <button class="nav-item active" onclick="showTab('stats')"><span class="nav-icon">📊</span>لوحة التحكم</button>
       <a class="nav-item" href="students.html"><span class="nav-icon">🎓</span>الطلاب</a>
+      <button class="nav-item" id="progNavBtn" onclick="showTab('programs')" style="display:none"><span class="nav-icon">📚</span>البرامج الدراسية</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-chip" id="userChip"></div>
@@ -22,61 +37,213 @@
   </aside>
 
   <main class="main-content">
-    <div class="page-header">
-      <h1 id="dashTitle">📊 لوحة التحكم</h1>
-      <p id="dashSub">جارٍ التحميل...</p>
+
+    <!-- ══ تبويب الإحصائيات ══ -->
+    <div id="tabStats">
+      <div class="page-header">
+        <h1 id="dashTitle">📊 لوحة التحكم</h1>
+        <p id="dashSub">جارٍ التحميل...</p>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-num" id="sTotal">—</div>
+          <div class="stat-lbl">إجمالي الطلاب</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-num" id="sArrears">—</div>
+          <div class="stat-lbl">عليهم متأخرات</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-num" id="sOverdue">—</div>
+          <div class="stat-lbl">متأخرون +30 يوم</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-num" id="sSum" style="font-size:1.3rem">—</div>
+          <div class="stat-lbl">مجموع المتأخرات (ريال)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>🔗 روابط سريعة</h2></div>
+        <div class="btn-row">
+          <a href="students.html" class="btn btn-primary">🎓 إدارة الطلاب</a>
+          <a href="students.html" onclick="sessionStorage.setItem('filter','overdue')" class="btn btn-danger">⚠️ عرض المتأخرين</a>
+          <button id="progQuickBtn" class="btn btn-ghost" onclick="showTab('programs')" style="display:none">📚 البرامج الدراسية</button>
+        </div>
+      </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="sTotal">—</div>
-        <div class="stat-lbl">إجمالي الطلاب</div>
+    <!-- ══ تبويب البرامج ══ -->
+    <div id="tabPrograms" style="display:none">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+        <div><h1>📚 البرامج الدراسية</h1><p>برامج خاصة بجهتك فقط</p></div>
+        <button class="btn btn-primary" onclick="openProgModal()">+ إضافة برنامج</button>
       </div>
-      <div class="stat-card warning">
-        <div class="stat-num" id="sArrears">—</div>
-        <div class="stat-lbl">عليهم متأخرات</div>
-      </div>
-      <div class="stat-card danger">
-        <div class="stat-num" id="sOverdue">—</div>
-        <div class="stat-lbl">متأخرين +30 يوم</div>
-      </div>
-      <div class="stat-card success">
-        <div class="stat-num" id="sSum">—</div>
-        <div class="stat-lbl">مجموع المتأخرات (ريال)</div>
+
+      <div id="progList">
+        <div style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><h2>🔗 روابط سريعة</h2></div>
-      <div class="btn-row">
-        <a href="students.html" class="btn btn-primary">🎓 إدارة الطلاب</a>
-        <a href="students.html?filter=overdue" class="btn btn-danger">⚠️ المتأخرون</a>
-      </div>
-    </div>
   </main>
+</div>
+
+<!-- Modal إضافة/تعديل برنامج -->
+<div class="modal-overlay" id="progModal">
+  <div class="modal" style="width:min(460px,96vw)">
+    <h3 id="progModalTitle">إضافة برنامج جديد</h3>
+    <div class="field"><label>اسم البرنامج <span style="color:var(--danger)">*</span></label>
+      <input id="pName" placeholder="دبلوم الأمن السيبراني"/>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>سعر الكاش (ريال) <span style="color:var(--danger)">*</span></label>
+        <input id="pCash" type="number" min="0" placeholder="6500" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>سعر الأقساط (ريال) <span style="color:var(--danger)">*</span></label>
+        <input id="pInst" type="number" min="0" placeholder="8500" inputmode="numeric"/>
+      </div>
+    </div>
+    <div class="alert alert-error" id="progErr" style="display:none;margin-top:8px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('progModal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveProgram()">حفظ</button>
+    </div>
+  </div>
 </div>
 
 <script src="../js/api.js"></script>
 <script>
-  const user = requireAuth(['org_admin','superadmin']);
-  if (user) {
-    document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
-    document.getElementById('orgName').textContent  = user.org?.name || '';
-    document.getElementById('dashTitle').textContent = `📊 ${user.org?.name || 'لوحة التحكم'}`;
-    document.getElementById('dashSub').textContent   = `مرحباً ${user.fullName}`;
+const user = requireAuth(['org_admin','data_entry']);
+if (user) {
+  document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
+  document.getElementById('orgName').textContent  = user.org?.name || '';
+  document.getElementById('dashTitle').textContent = `📊 ${user.org?.name || 'لوحة التحكم'}`;
+  document.getElementById('dashSub').textContent   = `مرحباً ${user.fullName} 👋`;
+
+  // البرامج لأدمن الجهة فقط
+  if (user.role === 'org_admin') {
+    document.getElementById('progNavBtn').style.display  = 'flex';
+    document.getElementById('progQuickBtn').style.display = 'inline-flex';
+  }
+}
+
+let editProgId = null;
+
+/* ── تبويبات ── */
+function showTab(name) {
+  document.getElementById('tabStats').style.display    = name==='stats'    ? '' : 'none';
+  document.getElementById('tabPrograms').style.display = name==='programs' ? '' : 'none';
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const idx = name==='stats' ? 0 : 2;
+  document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  if (name==='programs') loadPrograms();
+}
+
+/* ── الإحصائيات ── */
+async function loadStats() {
+  try {
+    const d = await apiFetch('/org/stats');
+    document.getElementById('sTotal').textContent   = d.total.toLocaleString('ar-SA');
+    document.getElementById('sArrears').textContent = d.withArrears.toLocaleString('ar-SA');
+    document.getElementById('sOverdue').textContent = d.overdue.toLocaleString('ar-SA');
+    document.getElementById('sSum').textContent     = d.totalArrearsAmount.toLocaleString('ar-SA');
+  } catch(e) { console.error(e); }
+}
+
+/* ── البرامج ── */
+async function loadPrograms() {
+  const el = document.getElementById('progList');
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</div>';
+  try {
+    const d = await apiFetch('/programs');
+    if (!d.programs.length) {
+      el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">لا توجد برامج. أضف أول برنامج.</div>';
+      return;
+    }
+    el.innerHTML = d.programs.map(p => `
+      <div class="prog-card">
+        <div style="font-size:1.6rem">📚</div>
+        <div class="prog-info">
+          <div class="prog-name">${p.name}</div>
+          <div class="prog-prices">
+            <span>💵 كاش: <strong>${p.cashPrice.toLocaleString('ar-SA')} ريال</strong></span>
+            <span>📆 أقساط: <strong>${p.installPrice.toLocaleString('ar-SA')} ريال</strong></span>
+          </div>
+        </div>
+        <span class="badge ${p.isActive?'badge-green':'badge-red'} prog-active">${p.isActive?'مفعّل':'معطّل'}</span>
+        <div class="btn-row" style="gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="editProg('${p._id}','${p.name}',${p.cashPrice},${p.installPrice})">✏️</button>
+          <button class="btn btn-sm ${p.isActive?'btn-danger':'btn-success'}" onclick="toggleProg('${p._id}')">
+            ${p.isActive?'تعطيل':'تفعيل'}
+          </button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--danger);text-align:center;padding:40px">${e.message}</div>`;
+  }
+}
+
+function openProgModal(id=null) {
+  editProgId = id;
+  document.getElementById('progModalTitle').textContent = id ? 'تعديل البرنامج' : 'إضافة برنامج جديد';
+  document.getElementById('progErr').style.display = 'none';
+  document.getElementById('progModal').classList.add('open');
+}
+
+function editProg(id, name, cash, inst) {
+  document.getElementById('pName').value = name;
+  document.getElementById('pCash').value = cash;
+  document.getElementById('pInst').value = inst;
+  openProgModal(id);
+}
+
+async function saveProgram() {
+  const name = document.getElementById('pName').value.trim();
+  const cash = +document.getElementById('pCash').value;
+  const inst = +document.getElementById('pInst').value;
+  const err  = document.getElementById('progErr');
+  err.style.display = 'none';
+
+  if (!name || cash < 0 || inst < 0) {
+    err.textContent = 'جميع الحقول مطلوبة.';
+    err.style.display = 'block'; return;
   }
 
-  async function loadStats() {
-    try {
-      const d = await apiFetch('/org/stats');
-      document.getElementById('sTotal').textContent   = d.total.toLocaleString('ar-SA');
-      document.getElementById('sArrears').textContent = d.withArrears.toLocaleString('ar-SA');
-      document.getElementById('sOverdue').textContent = d.overdue.toLocaleString('ar-SA');
-      document.getElementById('sSum').textContent     = d.totalArrearsAmount.toLocaleString('ar-SA');
-    } catch(e) { console.error(e); }
+  try {
+    if (editProgId) {
+      await apiFetch(`/programs/${editProgId}`, { method:'PATCH', body:{ name, cashPrice:cash, installPrice:inst } });
+    } else {
+      await apiFetch('/programs', { method:'POST', body:{ name, cashPrice:cash, installPrice:inst } });
+    }
+    closeModal('progModal');
+    document.getElementById('pName').value = '';
+    document.getElementById('pCash').value = '';
+    document.getElementById('pInst').value = '';
+    editProgId = null;
+    loadPrograms();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
   }
+}
 
-  loadStats();
+async function toggleProg(id) {
+  try {
+    await apiFetch(`/programs/${id}`, { method:'PATCH', body:{ isActive: undefined } });
+    // نجلب ثم نعكس
+    const d = await apiFetch('/programs');
+    const p = d.programs.find(x=>x._id===id);
+    await apiFetch(`/programs/${id}`, { method:'PATCH', body:{ isActive: !p?.isActive } });
+    loadPrograms();
+  } catch(e) { alert(e.message); }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+loadStats();
 </script>
 </body>
 </html>

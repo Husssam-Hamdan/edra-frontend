@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <title>ملف الطالب — إدراء</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    /* ── بطاقة الهوية ── */
+    .profile-hero {
+      background: linear-gradient(135deg, rgba(47,129,247,.12), rgba(63,185,80,.06));
+      border: 1px solid rgba(47,129,247,.25);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .avatar {
+      width: 72px; height: 72px;
+      background: rgba(47,129,247,.15);
+      border: 2px solid rgba(47,129,247,.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; flex-shrink: 0;
+    }
+    .hero-info { flex: 1; min-width: 200px; }
+    .hero-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+    .hero-sub  { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--text-muted); margin-bottom: 10px; }
+    .hero-sub span { display: flex; align-items: center; gap: 5px; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sid { font-family: monospace; font-size: .85rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; color: var(--text-muted); }
+    .hero-actions { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
+
+    /* ── بطاقات الملخص المالي ── */
+    .finance-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .fin-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      text-align: center;
+    }
+    .fin-num { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .fin-lbl { font-size: .76rem; color: var(--text-muted); }
+    @media(max-width:768px){ .finance-grid { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:480px){ .finance-grid { grid-template-columns: 1fr 1fr; } .profile-hero { flex-direction:column; } }
+
+    /* ── الأقسام ── */
+    .sec { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+    .sec-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .sec-title { font-size: .88rem; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+
+    /* ── شبكة المعلومات ── */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .info-item { }
+    .info-lbl  { font-size: .74rem; color: var(--text-muted); margin-bottom: 3px; }
+    .info-val  { font-size: .92rem; font-weight: 600; }
+
+    /* ── جدول الدفعات ── */
+    .pay-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+    .pay-table th { background: var(--bg3); color: var(--text-muted); padding: 9px 12px; font-weight: 600; font-size: .78rem; border-bottom: 1px solid var(--border); text-align: center; }
+    .pay-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+    .pay-table tbody tr:last-child td { border-bottom: none; }
+    .pay-table tbody tr:hover td { background: rgba(47,129,247,.03); }
+    .amt-pay { color: var(--success); font-weight: 700; }
+    .amt-ref { color: var(--danger);  font-weight: 700; }
+
+    /* ── الوثائق ── */
+    .docs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media(max-width:600px){ .docs-grid { grid-template-columns: 1fr; } }
+    .doc-box {
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 14px; text-align: center; background: var(--bg3);
+      transition: border-color .2s;
+    }
+    .doc-box:hover { border-color: var(--accent); }
+    .doc-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .doc-name { font-size: .78rem; color: var(--text-muted); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .doc-img  { max-width: 100%; max-height: 120px; object-fit: contain; border-radius: 4px; margin-bottom: 8px; }
+
+    /* ── شريط التقدم المالي ── */
+    .progress-wrap { margin-top: 10px; }
+    .progress-bar  { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+    .progress-lbl  { display: flex; justify-content: space-between; font-size: .75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── سجل العمليات ── */
+    .log-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .log-item:last-child { border-bottom: none; }
+    .log-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+    .log-text { font-size: .85rem; }
+    .log-time { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── toast ── */
+    .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); padding:12px 28px; border-radius:var(--radius); font-weight:600; z-index:3000; animation:ta 3.2s forwards; white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.45); }
+    .toast.s { background:var(--success); color:#fff; }
+    .toast.e { background:var(--danger);  color:#fff; }
+    @keyframes ta { 0%{opacity:0;top:35px} 12%{opacity:1;top:20px} 80%{opacity:1} 100%{opacity:0;top:10px} }
+
+    /* ── modal الدفع ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(13,17,23,.85); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(6px); }
+    .modal-overlay.open { display:flex; }
+
+    /* ── Skeleton loading ── */
+    .skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skel-line { height: 14px; margin-bottom: 8px; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w40 { width: 40%; }
+    .skel-line.w80 { width: 80%; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span id="orgName">...</span></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>لوحة التحكم</a>
+      <a class="nav-item" href="students.html"><span class="nav-icon">🎓</span>الطلاب</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="userChip"></div>
+      <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main class="main-content" id="mainContent">
+
+    <!-- Loading Skeleton -->
+    <div id="skeleton">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px">
+        <div class="skeleton skel-line w60" style="height:24px;margin-bottom:12px"></div>
+        <div class="skeleton skel-line w40"></div>
+        <div class="skeleton skel-line w80"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div class="skeleton" style="height:80px;border-radius:var(--radius)"></div>
+        <div class="skeleton" style="height:80px;border-radius:var(--radius)"></div>
+        <div class="skeleton" style="height:80px;border-radius:var(--radius)"></div>
+        <div class="skeleton" style="height:80px;border-radius:var(--radius)"></div>
+      </div>
+    </div>
+
+    <!-- المحتوى الفعلي (مخفي أثناء التحميل) -->
+    <div id="profileContent" style="display:none">
+
+      <!-- ── بطاقة الهوية ── -->
+      <div class="profile-hero">
+        <div class="avatar">🎓</div>
+        <div class="hero-info">
+          <div class="hero-name" id="pName">—</div>
+          <div class="hero-sub">
+            <span>🆔 <span id="pSid"></span></span>
+            <span>🪪 <span id="pNat"></span></span>
+            <span>📱 <span id="pPhone"></span></span>
+            <span>🏢 <span id="pEmp"></span></span>
+          </div>
+          <div class="hero-badges" id="pBadges"></div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-sm" onclick="openPayModal()">💰 تسجيل دفعة</button>
+          <button class="btn btn-ghost   btn-sm" onclick="printReport()">🖨️ طباعة PDF</button>
+          <a class="btn btn-ghost btn-sm" id="editBtn" href="#">✏️ تعديل البيانات</a>
+          <button class="btn btn-danger  btn-sm" id="refundBtn" onclick="confirmRefund()" style="display:none">↩️ استرداد المبلغ</button>
+        </div>
+      </div>
+
+      <!-- ── الملخص المالي ── -->
+      <div class="finance-grid">
+        <div class="fin-card">
+          <div class="fin-num" id="fPrice" style="color:var(--accent)">—</div>
+          <div class="fin-lbl">سعر البرنامج</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-num" id="fPaid" style="color:var(--success)">—</div>
+          <div class="fin-lbl">إجمالي المدفوع</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-num" id="fRemain" style="color:var(--danger)">—</div>
+          <div class="fin-lbl">المتبقي</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-num" id="fCount" style="color:var(--warning)">—</div>
+          <div class="fin-lbl">مرات السداد</div>
+        </div>
+      </div>
+
+      <!-- شريط التقدم -->
+      <div class="sec" style="padding:16px 20px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:.82rem;color:var(--text-muted)">نسبة السداد</span>
+          <span style="font-size:.88rem;font-weight:700" id="fPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="fProgress" style="width:0%;background:var(--success)"></div>
+        </div>
+        <div class="progress-lbl">
+          <span id="fPaidLbl">المدفوع: 0</span>
+          <span id="fTotalLbl">الإجمالي: 0</span>
+        </div>
+      </div>
+
+      <!-- ── معلومات الطالب ── -->
+      <div class="sec">
+        <div class="sec-hdr">
+          <div class="sec-title">👤 بيانات الطالب</div>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="info-lbl">الاسم الكامل</div><div class="info-val" id="iName">—</div></div>
+          <div class="info-item"><div class="info-lbl">الرقم الجامعي</div><div class="info-val" id="iSid">—</div></div>
+          <div class="info-item"><div class="info-lbl">رقم الهوية</div><div class="info-val" id="iNat">—</div></div>
+          <div class="info-item"><div class="info-lbl">رقم الجوال</div><div class="info-val" id="iPhone">—</div></div>
+          <div class="info-item"><div class="info-lbl">جهة العمل</div><div class="info-val" id="iEmp">—</div></div>
+          <div class="info-item"><div class="info-lbl">تاريخ الانضمام</div><div class="info-val" id="iJoin">—</div></div>
+          <div class="info-item"><div class="info-lbl">البرنامج الدراسي</div><div class="info-val" id="iProg">—</div></div>
+          <div class="info-item"><div class="info-lbl">نوع الدفع</div><div class="info-val" id="iPayType">—</div></div>
+          <div class="info-item"><div class="info-lbl">تاريخ بداية البرنامج</div><div class="info-val" id="iProgStart">—</div></div>
+          <div class="info-item"><div class="info-lbl">طريقة الدفع</div><div class="info-val" id="iPayMeth">—</div></div>
+          <div class="info-item"><div class="info-lbl">آخر سداد</div><div class="info-val" id="iLastPay">—</div></div>
+          <div class="info-item"><div class="info-lbl">الحالة</div><div class="info-val" id="iStatus">—</div></div>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)" id="iNotesWrap">
+          <div class="info-lbl">الملاحظات</div>
+          <div style="font-size:.88rem;color:var(--text-muted);margin-top:4px" id="iNotes">—</div>
+        </div>
+      </div>
+
+      <!-- ── الوثائق ── -->
+      <div class="sec">
+        <div class="sec-hdr">
+          <div class="sec-title">📎 الوثائق المرفقة</div>
+        </div>
+        <div class="docs-grid" id="docsGrid"></div>
+      </div>
+
+      <!-- ── جدول الدفعات ── -->
+      <div class="sec">
+        <div class="sec-hdr">
+          <div class="sec-title">📋 سجل الدفعات</div>
+          <span id="payTotal" style="font-size:.82rem;color:var(--text-muted)"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="pay-table">
+            <thead><tr>
+              <th>#</th><th>التاريخ</th><th>الوقت</th><th>المبلغ</th>
+              <th>طريقة السداد</th><th>النوع</th><th>بواسطة</th><th>ملاحظة</th>
+            </tr></thead>
+            <tbody id="payTbody">
+              <tr><td colspan="8" class="empty-row">لا توجد دفعات بعد</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── سجل العمليات ── -->
+      <div class="sec">
+        <div class="sec-hdr">
+          <div class="sec-title">📝 سجل العمليات</div>
+        </div>
+        <div id="logList"></div>
+      </div>
+
+    </div><!-- /profileContent -->
+  </main>
+</div>
+
+<!-- ══ Modal تسجيل دفعة ══ -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal" style="width:min(480px,96vw)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3>💰 تسجيل دفعة</h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px">
+      <span style="color:var(--danger);font-weight:700">المتأخرات المتبقية: </span>
+      <span style="color:var(--danger);font-size:1.2rem;font-weight:700" id="mArrears">0 ريال</span>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>المبلغ المسدد (ريال) <span style="color:var(--danger)">*</span></label>
+        <input id="payAmt" type="number" min="1" placeholder="500" inputmode="numeric"/>
+      </div>
+      <div class="field"><label>طريقة السداد</label>
+        <select id="payMeth">
+          <option value="شبكة">💳 شبكة</option>
+          <option value="نقدي">💵 نقدي</option>
+          <option value="تحويل">🏦 تحويل بنكي</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظة (اختياري)</label>
+        <input id="payNote" placeholder="..."/>
+      </div>
+    </div>
+    <div class="alert alert-error" id="payErr" style="display:none;margin-top:8px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-success" onclick="submitPay()">✅ تسجيل الدفعة</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+/* ══════════════════════════════════════
+   إعداد
+══════════════════════════════════════ */
+const user = requireAuth(['org_admin','data_entry']);
+if (user) {
+  document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
+  document.getElementById('orgName').textContent  = user.org?.name || '';
+}
+
+// جلب ID من الـ URL
+const params = new URLSearchParams(window.location.search);
+const stuId  = params.get('id');
+if (!stuId) window.location.href = 'students.html';
+
+let stuData = null;
+let payments = [];
+
+const mI = { 'شبكة':'💳', 'نقدي':'💵', 'تحويل':'🏦' };
+const fmt = d => d ? new Date(d).toLocaleDateString('ar-SA') : '—';
+const fmtN = n => Number(n||0).toLocaleString('ar-SA');
+
+/* ══ تحميل البيانات ══ */
+async function loadProfile() {
+  try {
+    // جلب الطالب
+    const d = await apiFetch(`/students?q=${stuId}&limit=1`);
+    // جرّب البحث بالـ ID أولاً، ثم بـ studentId
+    let s = d.students?.[0];
+
+    // إذا ما وجد بالبحث النصي، جرّب بطريقة مختلفة
+    if (!s || s._id !== stuId) {
+      const d2 = await apiFetch(`/students?limit=200`);
+      s = d2.students?.find(x => x._id === stuId);
+    }
+
+    if (!s) { showError('الطالب غير موجود.'); return; }
+    stuData = s;
+
+    // جلب الدفعات
+    const pd = await apiFetch(`/payments/${stuId}`);
+    payments = pd.payments || [];
+
+    renderProfile(s);
+    renderPayments(payments);
+    renderDocs(s);
+    renderLog(s);
+
+    // إخفاء skeleton وإظهار المحتوى
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('profileContent').style.display = 'block';
+
+    // تحديث عنوان الصفحة
+    document.title = `${s.name} — إدراء`;
+
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+/* ══ رسم الملف الشخصي ══ */
+function renderProfile(s) {
+  const isRefunded = s.isRefunded;
+  const hasArrears = s.hasArrears && !isRefunded;
+  const daysLate   = s.lastPayment ? Math.floor((Date.now() - new Date(s.lastPayment).getTime()) / 86400000) : null;
+  const isOverdue  = hasArrears && daysLate !== null && daysLate >= 30;
+
+  // Hero
+  document.getElementById('pName').textContent  = s.name;
+  document.getElementById('pSid').textContent   = s.studentId || '—';
+  document.getElementById('pNat').textContent   = s.nationalId;
+  document.getElementById('pPhone').textContent = s.phone;
+  document.getElementById('pEmp').textContent   = s.employer || '—';
+
+  // Badges
+  const badges = document.getElementById('pBadges');
+  badges.innerHTML = '';
+  if (s.programName) badges.innerHTML += `<span class="badge badge-blue">📚 ${s.programName}</span>`;
+  if (s.paymentType === 'أقساط') badges.innerHTML += `<span class="badge badge-yellow">📆 أقساط</span>`;
+  else badges.innerHTML += `<span class="badge badge-gray">💵 كاش</span>`;
+  if (isRefunded)   badges.innerHTML += `<span class="badge badge-yellow">↩️ مُسترد</span>`;
+  else if (isOverdue) badges.innerHTML += `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
+  else if (hasArrears) badges.innerHTML += `<span class="badge badge-red">💰 عليه متأخرات</span>`;
+  else              badges.innerHTML += `<span class="badge badge-green">✅ لا متأخرات</span>`;
+
+  // زر الاسترداد — يظهر فقط إذا كان نشطاً ومدفوع شيء
+  if (!isRefunded && (s.totalPaid || 0) > 0 && user.role === 'org_admin') {
+    document.getElementById('refundBtn').style.display = 'block';
+  }
+
+  // رابط التعديل
+  document.getElementById('editBtn').href = `students.html?edit=${s._id}`;
+
+  // الملخص المالي
+  const price  = s.programPrice || 0;
+  const paid   = s.totalPaid    || 0;
+  const remain = Math.max(0, (s.arrearsAmount || 0));
+  const pct    = price > 0 ? Math.min(100, Math.round(paid / price * 100)) : 0;
+
+  document.getElementById('fPrice').textContent  = fmtN(price)  + ' ﷼';
+  document.getElementById('fPaid').textContent   = fmtN(paid)   + ' ﷼';
+  document.getElementById('fRemain').textContent = fmtN(remain) + ' ﷼';
+  document.getElementById('fCount').textContent  = s.paymentCount || 0;
+
+  document.getElementById('fPercent').textContent = pct + '%';
+  document.getElementById('fProgress').style.width = pct + '%';
+  document.getElementById('fProgress').style.background = pct >= 100 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+  document.getElementById('fPaidLbl').textContent  = `المدفوع: ${fmtN(paid)} ريال`;
+  document.getElementById('fTotalLbl').textContent = `الإجمالي: ${fmtN(price)} ريال`;
+
+  // المعلومات التفصيلية
+  document.getElementById('iName').textContent     = s.name;
+  document.getElementById('iSid').innerHTML        = `<span class="sid">${s.studentId || '—'}</span>`;
+  document.getElementById('iNat').textContent      = s.nationalId;
+  document.getElementById('iPhone').textContent    = s.phone;
+  document.getElementById('iEmp').textContent      = s.employer   || '—';
+  document.getElementById('iJoin').textContent     = fmt(s.joinDate);
+  document.getElementById('iProg').textContent     = s.programName || '—';
+  document.getElementById('iPayType').textContent  = s.paymentType || 'كاش';
+  document.getElementById('iProgStart').textContent = fmt(s.programStartDate);
+  document.getElementById('iPayMeth').textContent  = `${mI[s.paymentMethod]||''} ${s.paymentMethod}`;
+  document.getElementById('iLastPay').textContent  = fmt(s.lastPayment);
+
+  const statusEl = document.getElementById('iStatus');
+  if (isRefunded)     statusEl.innerHTML = '<span class="badge badge-yellow">↩️ مُسترد (منسحب)</span>';
+  else if (isOverdue) statusEl.innerHTML = `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
+  else if (hasArrears)statusEl.innerHTML = '<span class="badge badge-yellow">💰 عليه متأخرات</span>';
+  else                statusEl.innerHTML = '<span class="badge badge-green">✅ نشط — لا متأخرات</span>';
+
+  document.getElementById('iNotes').textContent = s.notes || 'لا توجد ملاحظات';
+
+  // Modal
+  document.getElementById('mArrears').textContent = fmtN(remain) + ' ريال';
+  if (!hasArrears) document.querySelector('.btn-success[onclick="submitPay()"]').disabled = false;
+}
+
+/* ══ جدول الدفعات ══ */
+function renderPayments(list) {
+  const tbody = document.getElementById('payTbody');
+  document.getElementById('payTotal').textContent = `${list.length} عملية`;
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">لا توجد دفعات مسجلة</td></tr>';
+    return;
+  }
+
+  let totalIn = 0, totalOut = 0;
+  tbody.innerHTML = list.map((p, i) => {
+    const isRef = p.type === 'استرداد';
+    if (isRef) totalOut += p.amount;
+    else       totalIn  += p.amount;
+    const dt = new Date(p.createdAt);
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${dt.toLocaleDateString('ar-SA')}</td>
+      <td style="font-size:.78rem;color:var(--text-muted)">${dt.toLocaleTimeString('ar-SA', {hour:'2-digit',minute:'2-digit'})}</td>
+      <td class="${isRef?'amt-ref':'amt-pay'}">${isRef?'−':'+'}${fmtN(p.amount)} ﷼</td>
+      <td>${mI[p.paymentMethod]||''} ${p.paymentMethod}</td>
+      <td><span class="badge ${isRef?'badge-yellow':'badge-green'}">${p.type}</span></td>
+      <td style="font-size:.82rem">${p.paidBy?.fullName || '—'}</td>
+      <td style="font-size:.8rem;color:var(--text-muted);max-width:120px;white-space:normal">${p.note || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // صف الإجمالي
+  tbody.innerHTML += `
+    <tr style="background:var(--bg3);font-weight:700">
+      <td colspan="3" style="text-align:right;padding-right:16px">الإجمالي</td>
+      <td class="amt-pay">+${fmtN(totalIn)} ﷼</td>
+      <td colspan="4" style="text-align:right;font-size:.82rem;color:var(--text-muted)">
+        ${totalOut > 0 ? `مُسترد: <span class="amt-ref">−${fmtN(totalOut)} ﷼</span>` : ''}
+      </td>
+    </tr>`;
+}
+
+/* ══ الوثائق ══ */
+function renderDocs(s) {
+  const docs = [
+    { label: 'الهوية الوطنية', icon: '🪪', url: s.idCopyUrl,    name: s.idCopyFileName },
+    { label: 'المؤهل العلمي',  icon: '🎓', url: s.certUrl,      name: s.certFileName },
+    { label: 'موافقة جهة العمل', icon: '✅', url: s.approvalUrl, name: s.approvalFileName },
+  ];
+
+  document.getElementById('docsGrid').innerHTML = docs.map(doc => `
+    <div class="doc-box">
+      <div class="doc-icon">${doc.icon}</div>
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:6px">${doc.label}</div>
+      ${doc.url
+        ? `<img src="${doc.url}" class="doc-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+           <div style="font-size:2rem;display:none">📄</div>
+           <div class="doc-name">${doc.name || ''}</div>
+           <a href="${doc.url}" target="_blank" class="btn btn-ghost btn-sm">🔗 فتح</a>`
+        : `<div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;color:var(--text-dim);font-size:.82rem;margin:8px 0">لم يُرفع</div>`
+      }
+    </div>`).join('');
+}
+
+/* ══ سجل العمليات ══ */
+function renderLog(s) {
+  const logs = [];
+  if (s.createdBy) logs.push({
+    icon: '➕',
+    text: `أضاف الطالب: ${s.createdBy.fullName || s.createdBy.username || '—'}`,
+    time: s.createdAt,
+  });
+  if (s.lastEditedBy && s.lastEditedAt) logs.push({
+    icon: '✏️',
+    text: `آخر تعديل بواسطة: ${s.lastEditedBy.fullName || s.lastEditedBy.username || '—'}`,
+    time: s.lastEditedAt,
+  });
+  if (s.isRefunded && s.refundedAt) logs.push({
+    icon: '↩️',
+    text: 'تم تسجيل استرداد المبلغ',
+    time: s.refundedAt,
+  });
+
+  document.getElementById('logList').innerHTML = logs.length
+    ? logs.map(l => `
+        <div class="log-item">
+          <div class="log-icon">${l.icon}</div>
+          <div>
+            <div class="log-text">${l.text}</div>
+            <div class="log-time">📅 ${fmt(l.time)} ${l.time ? new Date(l.time).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:.85rem">لا توجد سجلات</div>';
+}
+
+/* ══ تسجيل دفعة ══ */
+function openPayModal() {
+  if (!stuData?.hasArrears) {
+    toast('لا توجد متأخرات لهذا الطالب.', 'e');
+    return;
+  }
+  document.getElementById('payAmt').value  = '';
+  document.getElementById('payNote').value = '';
+  document.getElementById('payErr').style.display = 'none';
+  document.getElementById('payModal').classList.add('open');
+}
+
+async function submitPay() {
+  const amt  = +document.getElementById('payAmt').value;
+  const note = document.getElementById('payNote').value.trim();
+  const meth = document.getElementById('payMeth').value;
+  const err  = document.getElementById('payErr');
+  err.style.display = 'none';
+  if (!amt || amt <= 0) { err.textContent='أدخل مبلغاً صحيحاً.'; err.style.display='block'; return; }
+  try {
+    const d = await apiFetch(`/payments/${stuId}`, { method:'POST', body:{ amount:amt, note, paymentMethod:meth } });
+    closeModal();
+    toast(d.message || 'تم تسجيل الدفعة ✓');
+    loadProfile(); // إعادة التحميل
+  } catch(e) { err.textContent=e.message; err.style.display='block'; }
+}
+
+/* ══ استرداد ══ */
+async function confirmRefund() {
+  const confirmed = confirm(`تأكيد استرداد ${fmtN(stuData.totalPaid)} ريال؟\nهذه العملية لا يمكن التراجع عنها.`);
+  if (!confirmed) return;
+  try {
+    const d = await apiFetch(`/students/${stuId}/refund`, { method:'POST', body:{ paymentMethod:'نقدي' } });
+    toast(d.message || 'تم الاسترداد ✓');
+    loadProfile();
+  } catch(e) { toast(e.message, 'e'); }
+}
+
+/* ══ طباعة PDF ══ */
+function printReport() {
+  if (!stuData) return;
+  const s   = stuData;
+  const org = user.org?.name || '';
+  const now = new Date().toLocaleDateString('ar-SA');
+  const w   = window.open('','_blank','width=850,height=950');
+
+  w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8"/><title>ملف الطالب — ${s.name}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'IBM Plex Sans Arabic',Arial,sans-serif;background:#fff;color:#111;padding:36px;font-size:13.5px;line-height:1.6}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2f81f7;padding-bottom:16px;margin-bottom:24px}
+      .header h1{font-size:1.5rem;color:#2f81f7;margin-bottom:4px}
+      .header .org{font-size:.85rem;color:#555}
+      .header .date{font-size:.8rem;color:#888;text-align:left}
+      .section{margin-bottom:22px}
+      .sec-title{font-size:.78rem;font-weight:700;color:#2f81f7;border-bottom:1.5px solid #e0eaff;padding-bottom:5px;margin-bottom:12px;letter-spacing:.04em}
+      .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 24px}
+      .item .lbl{font-size:.72rem;color:#888;margin-bottom:2px}
+      .item .val{font-weight:600;font-size:.88rem}
+      .finance-boxes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+      .fbox{background:#f8fafc;border:1px solid #e0e7ef;border-radius:8px;padding:12px;text-align:center}
+      .fbox .fn{font-size:1.2rem;font-weight:700;color:#2f81f7}
+      .fbox .fl{font-size:.72rem;color:#888;margin-top:3px}
+      .pay-table{width:100%;border-collapse:collapse;font-size:.82rem}
+      .pay-table th{background:#f0f4f8;padding:7px 10px;text-align:right;font-weight:600;border:1px solid #ddd}
+      .pay-table td{padding:7px 10px;border:1px solid #ddd}
+      .pay-table tr:nth-child(even){background:#fafafa}
+      .green{color:#16a34a;font-weight:700}.red{color:#dc2626;font-weight:700}
+      .badge-g{background:#f0fdf4;color:#166534;border:1px solid #86efac;padding:2px 8px;border-radius:20px;font-size:.72rem}
+      .badge-y{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:2px 8px;border-radius:20px;font-size:.72rem}
+      .progress{height:8px;background:#e5e7eb;border-radius:4px;margin:6px 0;overflow:hidden}
+      .progress-fill{height:100%;border-radius:4px;background:#16a34a}
+      .footer{margin-top:28px;text-align:center;font-size:.75rem;color:#aaa;border-top:1px solid #eee;padding-top:12px}
+      @media print{body{padding:20px}.no-print{display:none}}
+    </style></head><body>
+    <div class="header">
+      <div>
+        <h1>🗂️ ملف الطالب</h1>
+        <div class="org">📍 ${org}</div>
+      </div>
+      <div class="date">📅 ${now}<br><span style="font-size:.9rem;font-weight:600;color:#2f81f7">${s.studentId||''}</span></div>
+    </div>
+
+    <!-- الملخص المالي -->
+    <div class="finance-boxes">
+      <div class="fbox"><div class="fn">${fmtN(s.programPrice)} ﷼</div><div class="fl">سعر البرنامج</div></div>
+      <div class="fbox"><div class="fn green">${fmtN(s.totalPaid)} ﷼</div><div class="fl">إجمالي المدفوع</div></div>
+      <div class="fbox"><div class="fn red">${fmtN(s.arrearsAmount)} ﷼</div><div class="fl">المتبقي</div></div>
+      <div class="fbox"><div class="fn">${s.paymentCount||0}</div><div class="fl">مرات السداد</div></div>
+    </div>
+    ${s.programPrice > 0 ? `
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:#888;margin-bottom:4px">
+        <span>نسبة السداد</span><span>${Math.min(100,Math.round((s.totalPaid||0)/(s.programPrice)*100))}%</span>
+      </div>
+      <div class="progress"><div class="progress-fill" style="width:${Math.min(100,Math.round((s.totalPaid||0)/(s.programPrice)*100))}%"></div></div>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="sec-title">👤 البيانات الشخصية</div>
+      <div class="grid">
+        <div class="item"><div class="lbl">الاسم الكامل</div><div class="val">${s.name}</div></div>
+        <div class="item"><div class="lbl">رقم الهوية</div><div class="val">${s.nationalId}</div></div>
+        <div class="item"><div class="lbl">رقم الجوال</div><div class="val">${s.phone}</div></div>
+        <div class="item"><div class="lbl">جهة العمل</div><div class="val">${s.employer||'—'}</div></div>
+        <div class="item"><div class="lbl">تاريخ الانضمام</div><div class="val">${fmt(s.joinDate)}</div></div>
+        <div class="item"><div class="lbl">الحالة</div><div class="val">${s.isRefunded?'<span class="badge-y">مُسترد</span>':s.hasArrears?'<span class="badge-y">عليه متأخرات</span>':'<span class="badge-g">نشط</span>'}</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">📚 البرنامج الدراسي</div>
+      <div class="grid">
+        <div class="item"><div class="lbl">البرنامج</div><div class="val">${s.programName||'—'}</div></div>
+        <div class="item"><div class="lbl">نوع الدفع</div><div class="val">${s.paymentType||'كاش'}</div></div>
+        <div class="item"><div class="lbl">تاريخ بداية البرنامج</div><div class="val">${fmt(s.programStartDate)}</div></div>
+        <div class="item"><div class="lbl">طريقة الدفع</div><div class="val">${s.paymentMethod}</div></div>
+        <div class="item"><div class="lbl">آخر سداد</div><div class="val">${fmt(s.lastPayment)}</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">📎 الوثائق</div>
+      <div class="grid">
+        <div class="item"><div class="lbl">صورة الهوية</div><div class="val">${s.idCopyFileName?'<span class="badge-g">✅ مرفوعة</span>':'<span class="badge-y">غير مرفوعة</span>'}</div></div>
+        <div class="item"><div class="lbl">المؤهل العلمي</div><div class="val">${s.certFileName?'<span class="badge-g">✅ مرفوع</span>':'<span class="badge-y">غير مرفوع</span>'}</div></div>
+        <div class="item"><div class="lbl">موافقة جهة العمل</div><div class="val">${s.approvalFileName?'<span class="badge-g">✅ مرفوعة</span>':'<span class="badge-y">غير مرفوعة</span>'}</div></div>
+      </div>
+    </div>
+
+    ${payments.length ? `
+    <div class="section">
+      <div class="sec-title">📋 سجل الدفعات (${payments.length} عملية)</div>
+      <table class="pay-table">
+        <thead><tr><th>#</th><th>التاريخ</th><th>المبلغ</th><th>طريقة السداد</th><th>النوع</th><th>بواسطة</th><th>ملاحظة</th></tr></thead>
+        <tbody>
+          ${payments.map((p,i)=>`<tr>
+            <td>${i+1}</td>
+            <td>${new Date(p.createdAt).toLocaleDateString('ar-SA')}</td>
+            <td class="${p.type==='استرداد'?'red':'green'}">${p.type==='استرداد'?'−':'+'}${fmtN(p.amount)} ﷼</td>
+            <td>${p.paymentMethod}</td>
+            <td>${p.type}</td>
+            <td>${p.paidBy?.fullName||'—'}</td>
+            <td>${p.note||'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+
+    ${s.notes ? `<div class="section"><div class="sec-title">📝 ملاحظات</div><p style="font-size:.88rem;color:#444">${s.notes}</p></div>` : ''}
+
+    <div class="footer">نظام إدراء لأرشفة الطلاب | ${org} | ${now}</div>
+    <script>window.onload=()=>window.print();<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+/* ══ مساعدات ══ */
+function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+
+function toast(msg, type='s') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function showError(msg) {
+  document.getElementById('skeleton').innerHTML = `
+    <div style="text-align:center;padding:60px;color:var(--text-muted)">
+      <div style="font-size:3rem;margin-bottom:16px">😕</div>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:8px">${msg}</div>
+      <a href="students.html" class="btn btn-ghost" style="margin-top:12px">← العودة للطلاب</a>
+    </div>`;
+}
+
+/* ══ تشغيل ══ */
+loadProfile();
+</script>
+</body>
+</html>

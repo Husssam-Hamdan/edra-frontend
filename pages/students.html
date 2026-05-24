@@ -7,59 +7,66 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/shared.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style> 
-    /* ── نموذج ── */
-    .fsec-title { display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:var(--radius-sm);margin-bottom:14px;border-right:3px solid var(--accent); }
-    .fgrid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px; }
-    .fgrid .g2{grid-column:span 2} .fgrid .g3{grid-column:1/-1}
+  <style>
+    .fsec-title{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:var(--radius-sm);margin-bottom:14px;border-right:3px solid var(--accent)}
+    .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .fgrid .g2{grid-column:span 2}.fgrid .g3{grid-column:1/-1}
     @media(max-width:900px){.fgrid{grid-template-columns:1fr 1fr}.fgrid .g2{grid-column:1/-1}}
     @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 
-    /* ── رفع ── */
-    .upbox{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:16px 12px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative}
-    .upbox:hover{border-color:var(--accent)}
-    .upbox.done{border-color:var(--success);border-style:solid}
-    .upbox.loading{border-color:var(--warning);border-style:solid}
-    .up-icon{font-size:1.8rem;display:block;margin-bottom:4px}
-    .up-lbl{font-size:.78rem;color:var(--text-muted)}
-    .up-name{font-size:.75rem;color:var(--success);margin-top:5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* رفع */
+    .upbox{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative}
+    .upbox:hover{border-color:var(--accent)}.upbox.done{border-color:var(--success);border-style:solid}.upbox.loading{border-color:var(--warning);border-style:solid}
+    .up-icon{font-size:1.6rem;display:block;margin-bottom:3px}.up-lbl{font-size:.76rem;color:var(--text-muted)}
+    .up-name{font-size:.74rem;color:var(--success);margin-top:4px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .up-name.loading{color:var(--warning)}
-    .up-del{position:absolute;top:5px;left:5px;background:var(--danger-bg);color:var(--danger);border:none;border-radius:50%;width:20px;height:20px;font-size:.7rem;cursor:pointer;display:none;align-items:center;justify-content:center}
+    .up-del{position:absolute;top:4px;left:4px;background:var(--danger-bg);color:var(--danger);border:none;border-radius:50%;width:18px;height:18px;font-size:.65rem;cursor:pointer;display:none;align-items:center;justify-content:center}
     .upbox.done .up-del{display:flex}
-    .upbox img.uppreview{max-width:100%;max-height:70px;border-radius:4px;margin-top:8px;object-fit:contain}
 
-    /* ── بحث ── */
-    .srch-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
-    .srch-bar input{flex:1;min-width:200px;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.9rem;outline:none}
-    .srch-bar input:focus{border-color:var(--accent)}
+    /* بحث متقدم */
+    .search-main{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .search-main input{flex:1;min-width:200px;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.9rem;outline:none}
+    .search-main input:focus{border-color:var(--accent)}
+    .adv-filters{display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .adv-filters.open{display:grid}
+    .adv-filters .field label{font-size:.76rem}
+    .adv-filters select,.adv-filters input{padding:7px 10px;font-size:.82rem}
+    .filter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .ftag{display:flex;align-items:center;gap:4px;background:rgba(47,129,247,.12);color:var(--accent);border:1px solid rgba(47,129,247,.3);border-radius:20px;padding:3px 10px;font-size:.76rem}
+    .ftag button{background:none;border:none;color:var(--accent);cursor:pointer;padding:0;font-size:.8rem;line-height:1}
 
-    /* ── جدول ── */
+    /* جدول */
     .overdue td{background:rgba(248,81,73,.05)!important}
+    .pending td{background:rgba(210,153,34,.05)!important}
     .refunded td{opacity:.55}
+    .sid{font-family:monospace;font-size:.78rem;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted)}
 
-    /* ── toast ── */
+    /* toast */
     .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:var(--radius);font-weight:600;z-index:3000;animation:ta 3.2s forwards;white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.45)}
-    .toast.s{background:var(--success);color:#fff}.toast.e{background:var(--danger);color:#fff}
+    .toast.s{background:var(--success);color:#fff}.toast.e{background:var(--danger);color:#fff}.toast.w{background:var(--warning);color:#fff}
     @keyframes ta{0%{opacity:0;top:35px}12%{opacity:1;top:20px}80%{opacity:1}100%{opacity:0;top:10px}}
 
-    /* ── modal tabs ── */
+    /* modal tabs */
     .mtabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto}
     .mtab{padding:9px 16px;font-size:.84rem;border:none;background:none;color:var(--text-muted);cursor:pointer;font-family:var(--font);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
     .mtab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
     .mpanel{display:none}.mpanel.on{display:block}
 
-    /* ── دفعات ── */
-    .pl{max-height:320px;overflow-y:auto}
+    /* دفعات */
+    .pl{max-height:300px;overflow-y:auto}
     .pi{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--bg3)}
-    .pa{font-size:1.05rem;font-weight:700;min-width:90px}.pa.pay{color:var(--success)}.pa.ref{color:var(--danger)}
+    .pa{font-size:1rem;font-weight:700;min-width:90px}.pa.pay{color:var(--success)}.pa.ref{color:var(--danger)}
     .pm{flex:1}.pd{font-size:.78rem;color:var(--text-muted)}.pb{font-size:.75rem;color:var(--text-dim)}
 
-    /* ── mini stats ── */
+    /* mini stats */
     .mstats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
     .ms{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px}
     .msn{font-size:1.4rem;font-weight:700}.msl{font-size:.74rem;color:var(--text-muted);margin-top:2px}
 
-    .sid{font-family:monospace;font-size:.8rem;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted)}
+    /* نافذة الدفع بعد الإضافة */
+    .pay-after-add{background:var(--bg2);border:1px solid var(--accent);border-radius:var(--radius);padding:20px;margin-bottom:6px}
+    .pay-after-add h3{font-size:1rem;margin-bottom:4px}
+    .pay-after-add p{font-size:.85rem;color:var(--text-muted);margin-bottom:16px}
   </style>
 </head>
 <body>
@@ -77,7 +84,6 @@
   </aside>
 
   <main class="main-content">
-    <!-- رأس -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <div class="page-header" style="margin:0"><h1>🎓 الطلاب</h1><p>إضافة وإدارة بيانات الطلاب</p></div>
       <div class="btn-row">
@@ -89,7 +95,7 @@
 
     <div class="mstats" id="mstats"></div>
 
-    <!-- نموذج -->
+    <!-- ══ نموذج الإضافة ══ -->
     <div class="card" id="formCard" style="margin-bottom:18px">
       <div class="card-header">
         <h2 id="fTitle">➕ إضافة طالب جديد</h2>
@@ -98,7 +104,7 @@
       <form id="sForm" autocomplete="off">
         <div id="fBody">
 
-          <!-- الشخصية -->
+          <!-- البيانات الشخصية -->
           <div style="margin-bottom:18px">
             <div class="fsec-title">👤 البيانات الشخصية</div>
             <div class="fgrid">
@@ -107,7 +113,6 @@
               <div class="field"><label>رقم الجوال <span style="color:var(--danger)">*</span></label><input id="fPhone" placeholder="05XXXXXXXX" maxlength="12" inputmode="tel" required/></div>
               <div class="field"><label>جهة العمل</label><input id="fEmp" placeholder="وزارة التعليم"/></div>
               <div class="field"><label>تاريخ الانضمام</label><input id="fJoin" type="date"/></div>
-              <div class="field"><label>تاريخ بداية البرنامج</label><input id="fProgStart" type="date"/></div>
             </div>
           </div>
 
@@ -122,22 +127,8 @@
                 <select id="fPayType" onchange="onProgChange()"><option value="كاش">💵 كاش</option><option value="أقساط">📆 أقساط</option></select>
               </div>
               <div class="field"><label>السعر (ريال)</label><input id="fPrice" type="number" min="0" placeholder="0" readonly style="background:var(--bg)"/></div>
-            </div>
-          </div>
-
-          <!-- السداد -->
-          <div style="margin-bottom:18px">
-            <div class="fsec-title">💰 بيانات السداد</div>
-            <div class="fgrid">
-              <div class="field"><label>طريقة الدفع</label>
-                <select id="fPayMeth"><option value="شبكة">💳 شبكة</option><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option></select>
-              </div>
-              <div class="field"><label>تاريخ آخر سداد</label><input id="fLastPay" type="date"/></div>
-              <div class="field"><label>عدد مرات السداد</label><input id="fPayCnt" type="number" min="0" value="0"/></div>
-              <div class="field g3" style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center">
-                <label class="checkbox-lbl"><input type="checkbox" id="fHasArr" onchange="toggleArr()"/><span>عليه متأخرات</span></label>
-                <input id="fArrAmt" placeholder="قيمة المتأخرات (ريال)" disabled inputmode="numeric"/>
-              </div>
+              <div class="field"><label>تاريخ الانضمام</label><input id="fJoin" type="date"/></div>
+              <div class="field"><label>تاريخ بداية البرنامج</label><input id="fProgStart" type="date"/></div>
             </div>
           </div>
 
@@ -150,7 +141,6 @@
                 <div class="upbox" id="box_id" onclick="document.getElementById('inp_id').click()">
                   <span class="up-icon">🪪</span><div class="up-lbl">اضغط لرفع صورة أو PDF</div>
                   <div class="up-name" id="nm_id">لم يُرفع ملف</div>
-                  <img class="uppreview" id="pv_id" style="display:none"/>
                   <button class="up-del" onclick="clearF(event,'id')" title="حذف">✕</button>
                 </div>
                 <input type="file" id="inp_id" accept="image/*,.pdf" hidden onchange="handleFile(this,'id')"/>
@@ -160,7 +150,6 @@
                 <div class="upbox" id="box_cert" onclick="document.getElementById('inp_cert').click()">
                   <span class="up-icon">🎓</span><div class="up-lbl">اضغط لرفع صورة أو PDF</div>
                   <div class="up-name" id="nm_cert">لم يُرفع ملف</div>
-                  <img class="uppreview" id="pv_cert" style="display:none"/>
                   <button class="up-del" onclick="clearF(event,'cert')" title="حذف">✕</button>
                 </div>
                 <input type="file" id="inp_cert" accept="image/*,.pdf" hidden onchange="handleFile(this,'cert')"/>
@@ -170,16 +159,22 @@
                 <div class="upbox" id="box_appr" onclick="document.getElementById('inp_appr').click()">
                   <span class="up-icon">✅</span><div class="up-lbl">اضغط لرفع خطاب الموافقة</div>
                   <div class="up-name" id="nm_appr">لم يُرفع ملف</div>
-                  <img class="uppreview" id="pv_appr" style="display:none"/>
                   <button class="up-del" onclick="clearF(event,'appr')" title="حذف">✕</button>
                 </div>
                 <input type="file" id="inp_appr" accept="image/*,.pdf" hidden onchange="handleFile(this,'appr')"/>
               </div>
             </div>
+            <!-- خيار في انتظار الموافقة -->
+            <div style="margin-top:14px;padding:12px 16px;background:rgba(210,153,34,.06);border:1px solid rgba(210,153,34,.25);border-radius:var(--radius-sm)">
+              <label class="checkbox-lbl">
+                <input type="checkbox" id="fPending"/>
+                <span>⏳ <strong>في انتظار موافقة جهة العمل</strong> — لن يظهر في المتأخرين حتى يُرفع خطاب الموافقة</span>
+              </label>
+            </div>
           </div>
 
           <!-- ملاحظات -->
-          <div style="margin-bottom:4px">
+          <div>
             <div class="fsec-title">📝 ملاحظات</div>
             <div class="field"><textarea id="fNotes" rows="2" placeholder="أي ملاحظات إضافية..."></textarea></div>
           </div>
@@ -192,25 +187,97 @@
       </form>
     </div>
 
-    <!-- بحث -->
-    <div class="srch-bar">
-      <input id="srch" placeholder="🔍 الاسم أو الهوية أو الجوال أو الرقم الجامعي..." onkeydown="if(event.key==='Enter')doSearch()"/>
-      <button class="btn btn-primary" onclick="doSearch()">بحث</button>
-      <button class="btn btn-ghost"   onclick="showAll()">عرض الكل</button>
-      <button class="btn btn-danger btn-sm" onclick="showOvd()">⚠️ المتأخرون</button>
+    <!-- ══ البحث ══ -->
+    <div class="card" style="margin-bottom:14px;padding:16px">
+      <div class="search-main">
+        <input id="srch" placeholder="🔍 الاسم أو الهوية أو الجوال أو الرقم الجامعي..." onkeydown="if(event.key==='Enter')doSearch()"/>
+        <button class="btn btn-primary" onclick="doSearch()">بحث</button>
+        <button class="btn btn-ghost" onclick="showAll()">عرض الكل</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleAdv()" id="advBtn">⚙️ بحث متقدم</button>
+        <button class="btn btn-danger btn-sm" onclick="applyFilter({overdue:'true'})">⚠️ المتأخرون</button>
+        <button class="btn btn-sm" style="background:rgba(210,153,34,.15);color:var(--warning);border:1px solid var(--warning)" onclick="applyFilter({status:'pending'})">⏳ في الانتظار</button>
+      </div>
+
+      <!-- فلاتر متقدمة -->
+      <div class="adv-filters" id="advFilters">
+        <div class="field">
+          <label>الحالة</label>
+          <select id="fStatus">
+            <option value="">الكل</option>
+            <option value="active">نشط</option>
+            <option value="pending">في انتظار الموافقة</option>
+            <option value="refunded">مُسترد</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>البرنامج</label>
+          <select id="fFilterProg">
+            <option value="">كل البرامج</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>نوع الدفع</label>
+          <select id="fFilterPayType">
+            <option value="">الكل</option>
+            <option value="كاش">💵 كاش</option>
+            <option value="أقساط">📆 أقساط</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>طريقة الدفع</label>
+          <select id="fFilterPayMeth">
+            <option value="">الكل</option>
+            <option value="شبكة">💳 شبكة</option>
+            <option value="نقدي">💵 نقدي</option>
+            <option value="تحويل">🏦 تحويل</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>الانضمام من</label>
+          <input type="date" id="fJoinFrom"/>
+        </div>
+        <div class="field">
+          <label>الانضمام إلى</label>
+          <input type="date" id="fJoinTo"/>
+        </div>
+        <div class="field">
+          <label>بداية البرنامج من</label>
+          <input type="date" id="fProgFrom"/>
+        </div>
+        <div class="field">
+          <label>بداية البرنامج إلى</label>
+          <input type="date" id="fProgTo"/>
+        </div>
+        <div class="field">
+          <label>المتأخرات من (ريال)</label>
+          <input type="number" id="fArrMin" placeholder="0"/>
+        </div>
+        <div class="field">
+          <label>المتأخرات إلى (ريال)</label>
+          <input type="number" id="fArrMax" placeholder="9999"/>
+        </div>
+        <div class="field" style="grid-column:1/-1;display:flex;gap:8px;align-items:flex-end">
+          <button class="btn btn-primary" onclick="applyAdvSearch()">تطبيق الفلاتر</button>
+          <button class="btn btn-ghost"   onclick="clearAdv()">مسح الفلاتر</button>
+        </div>
+      </div>
+
+      <!-- علامات الفلاتر الفعالة -->
+      <div class="filter-tags" id="filterTags"></div>
     </div>
+
     <div id="alertBox"></div>
 
-    <!-- جدول -->
+    <!-- الجدول -->
     <div class="card" style="padding:0;overflow:hidden">
       <div class="tbl-wrap">
         <table>
           <thead><tr>
             <th>#</th><th>الرقم الجامعي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th>
             <th>البرنامج</th><th>النوع</th><th>🪪</th><th>🎓</th><th>✅</th>
-            <th>الدفع</th><th>المتأخرات</th><th>آخر سداد</th><th>الحالة</th><th>إجراءات</th>
+            <th>المتأخرات</th><th>آخر سداد</th><th>الحالة</th><th>إجراءات</th>
           </tr></thead>
-          <tbody id="tBody"><tr><td colspan="15" class="empty-row">ابحث أو اضغط "عرض الكل"</td></tr></tbody>
+          <tbody id="tBody"><tr><td colspan="14" class="empty-row">ابحث أو اضغط "عرض الكل"</td></tr></tbody>
         </table>
       </div>
       <div class="pagination" id="pgBar"></div>
@@ -218,76 +285,84 @@
   </main>
 </div>
 
-<!-- ══ Modal الطالب ══ -->
-<div class="modal-overlay" id="stuModal">
-  <div class="modal" style="width:min(660px,96vw)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div><h3 id="mName" style="margin:0"></h3><span class="sid" id="mSid"></span></div>
-      <button onclick="closeM('stuModal')" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
-    </div>
-    <p id="mInfo" style="font-size:.82rem;color:var(--text-muted);margin:6px 0 14px"></p>
+<!-- ══ نافذة الدفع بعد الإضافة ══ -->
+<div class="modal-overlay" id="afterAddModal">
+  <div class="modal" style="width:min(500px,96vw)">
+    <h3 style="margin-bottom:6px">🎉 تمت إضافة الطالب بنجاح</h3>
+    <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:20px" id="aaStudentName"></p>
 
-    <div class="mtabs">
-      <button class="mtab on" onclick="mTab('pay',this)">💰 دفعة</button>
-      <button class="mtab"    onclick="mTab('hist',this)">📋 سجل الدفعات</button>
-      <button class="mtab"    onclick="mTab('docs',this)">📎 الوثائق</button>
-      <button class="mtab"    onclick="mTab('refund',this)">↩️ استرداد</button>
-      <button class="mtab"    onclick="mTab('pdf',this)">🖨️ تقرير PDF</button>
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <button class="btn btn-primary" style="flex:1" onclick="showPaySection()">💰 نعم، دفع الآن</button>
+      <button class="btn btn-ghost"   style="flex:1" onclick="skipPay()">لاحقاً</button>
     </div>
 
-    <!-- دفعة -->
-    <div class="mpanel on" id="pan_pay">
-      <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px">
-        <span style="color:var(--danger);font-weight:700">المتأخرات المتبقية: </span>
-        <span style="color:var(--danger);font-size:1.2rem;font-weight:700" id="mArr">0 ريال</span>
+    <!-- قسم الدفع -->
+    <div id="paySection" style="display:none">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px">
+        <span style="color:var(--text-muted);font-size:.85rem">سعر البرنامج: </span>
+        <span style="font-weight:700" id="aaProgramPrice">—</span>
       </div>
       <div class="field-grid">
-        <div class="field"><label>المبلغ (ريال)</label><input id="payAmt" type="number" min="1" placeholder="500" inputmode="numeric"/></div>
-        <div class="field"><label>طريقة السداد</label><select id="payMeth"><option value="شبكة">💳 شبكة</option><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option></select></div>
-        <div class="field" style="grid-column:1/-1"><label>ملاحظة</label><input id="payNote" placeholder="اختياري"/></div>
+        <div class="field"><label>المبلغ المدفوع (ريال) <span style="color:var(--danger)">*</span></label>
+          <input id="aaPayAmt" type="number" min="1" placeholder="500" inputmode="numeric"/>
+        </div>
+        <div class="field"><label>طريقة الدفع</label>
+          <select id="aaPayMeth">
+            <option value="شبكة">💳 شبكة</option>
+            <option value="نقدي">💵 نقدي</option>
+            <option value="تحويل">🏦 تحويل</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>ملاحظة (اختياري)</label>
+          <input id="aaPayNote" placeholder="..."/>
+        </div>
       </div>
-      <div class="alert alert-error" id="payErr" style="display:none;margin-top:8px"></div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeM('stuModal')">إلغاء</button>
-        <button class="btn btn-success" onclick="submitPay()">✅ تسجيل الدفعة</button>
-      </div>
-    </div>
-
-    <!-- سجل الدفعات -->
-    <div class="mpanel" id="pan_hist">
-      <div class="pl" id="payList"><p style="color:var(--text-muted);text-align:center;padding:24px">جارٍ التحميل...</p></div>
-    </div>
-
-    <!-- وثائق -->
-    <div class="mpanel" id="pan_docs">
-      <div id="docsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
-    </div>
-
-    <!-- استرداد -->
-    <div class="mpanel" id="pan_refund">
-      <div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;line-height:1.8">
-        <strong style="color:var(--warning)">⚠️ تنبيه:</strong><br>
-        <span style="color:var(--text-muted);font-size:.88rem">سيتم تسجيل استرداد جميع المبالغ المدفوعة. هذه العملية لا يمكن التراجع عنها.</span><br>
-        <strong style="color:var(--warning)">إجمالي المدفوع: </strong><span id="mPaid" style="font-weight:700">0 ريال</span>
-      </div>
-      <div class="field-grid">
-        <div class="field"><label>طريقة الاسترداد</label><select id="refMeth"><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option><option value="شبكة">💳 شبكة</option></select></div>
-        <div class="field"><label>ملاحظة</label><input id="refNote" placeholder="سبب الاسترداد..."/></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeM('stuModal')">إلغاء</button>
-        <button class="btn btn-danger" onclick="submitRefund()">↩️ تأكيد الاسترداد</button>
+      <div class="alert alert-error" id="aaErr" style="display:none;margin-bottom:10px"></div>
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="submitAfterPay()">✅ تسجيل الدفعة</button>
+        <button class="btn btn-ghost"   onclick="skipPay()">تخطي</button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- PDF -->
-    <div class="mpanel" id="pan_pdf">
-      <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">سيتم فتح صفحة طباعة تحتوي على ملف الطالب كاملاً.</p>
-      <div id="pdfPreview" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;font-size:.85rem;line-height:2;max-height:300px;overflow-y:auto"></div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeM('stuModal')">إلغاء</button>
-        <button class="btn btn-primary" onclick="printReport()">🖨️ طباعة / حفظ PDF</button>
+<!-- ══ Modal سجل الدفعات ══ -->
+<div class="modal-overlay" id="histModal">
+  <div class="modal" style="width:min(600px,96vw)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="histName">سجل الدفعات</h3>
+      <button onclick="closeM('histModal')" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div class="pl" id="histList"><p style="color:var(--text-muted);text-align:center;padding:24px">جارٍ التحميل...</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeM('histModal')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal دفعة سريعة ══ -->
+<div class="modal-overlay" id="quickPayModal">
+  <div class="modal" style="width:min(460px,96vw)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3>💰 تسجيل دفعة</h3>
+      <button onclick="closeM('quickPayModal')" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px">
+      <span style="color:var(--danger);font-weight:700">المتأخرات: </span>
+      <span style="color:var(--danger);font-size:1.1rem;font-weight:700" id="qpArrears">0 ريال</span>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>المبلغ (ريال)</label><input id="qpAmt" type="number" min="1" placeholder="500" inputmode="numeric"/></div>
+      <div class="field"><label>طريقة السداد</label>
+        <select id="qpMeth"><option value="شبكة">💳 شبكة</option><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option></select>
       </div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظة</label><input id="qpNote" placeholder="اختياري"/></div>
+    </div>
+    <div class="alert alert-error" id="qpErr" style="display:none;margin-top:8px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeM('quickPayModal')">إلغاء</button>
+      <button class="btn btn-success" onclick="submitQP()">✅ تسجيل</button>
     </div>
   </div>
 </div>
@@ -300,62 +375,55 @@ if (user) {
   document.getElementById('orgName').textContent  = user.org?.name || '';
 }
 
-let editId=null, pg=1, lastQ=null, curStu=null, stuPayments=[];
-let fdata = { id:null, cert:null, appr:null }; // {url, publicId, name}
-let progs = [];
-let folded = false;
+let editId=null, pg=1, lastQ=null, curStuId=null;
+let fdata={id:null,cert:null,appr:null};
+let progs=[], folded=false, advOpen=false;
+let newStuId=null, newStuName='', newStuPrice=0, newStuPending=false;
+let activeFilters={};
+
+const mI={'شبكة':'💳','نقدي':'💵','تحويل':'🏦'};
+const fmtN=n=>Number(n||0).toLocaleString('ar-SA');
 
 /* ══ برامج ══ */
-async function loadProgs() {
-  try {
-    const d = await apiFetch('/programs');
-    progs = d.programs || [];
-    const sel = document.getElementById('fProg');
-    sel.innerHTML = '<option value="">— اختر برنامجاً —</option>';
-    progs.forEach(p => sel.innerHTML += `<option value="${p._id}" data-cash="${p.cashPrice}" data-inst="${p.installPrice}">${p.name}</option>`);
-  } catch {}
+async function loadProgs(){
+  try{
+    const d=await apiFetch('/programs');
+    progs=d.programs||[];
+    const sel=document.getElementById('fProg');
+    const fsel=document.getElementById('fFilterProg');
+    sel.innerHTML='<option value="">— اختر برنامجاً —</option>';
+    fsel.innerHTML='<option value="">كل البرامج</option>';
+    progs.forEach(p=>{
+      sel.innerHTML +=`<option value="${p._id}" data-cash="${p.cashPrice}" data-inst="${p.installPrice}">${p.name}</option>`;
+      fsel.innerHTML+=`<option value="${p._id}">${p.name}</option>`;
+    });
+  }catch{}
 }
-function onProgChange() {
-  const opt = document.getElementById('fProg').selectedOptions[0];
-  const pt  = document.getElementById('fPayType').value;
-  if (opt?.value) document.getElementById('fPrice').value = pt==='أقساط' ? opt.dataset.inst : opt.dataset.cash;
-  else document.getElementById('fPrice').value = '';
+function onProgChange(){
+  const opt=document.getElementById('fProg').selectedOptions[0];
+  const pt=document.getElementById('fPayType').value;
+  if(opt?.value) document.getElementById('fPrice').value=pt==='أقساط'?opt.dataset.inst:opt.dataset.cash;
+  else document.getElementById('fPrice').value='';
 }
 
-/* ══ رفع الملفات (Cloudinary) ══ */
-async function handleFile(input, key) {
-  const file = input.files[0]; if (!file) return;
-  const nm = document.getElementById(`nm_${key}`);
-  const bx = document.getElementById(`box_${key}`);
-  const pv = document.getElementById(`pv_${key}`);
-  nm.textContent = '⏳ جارٍ الرفع...';
-  nm.classList.add('loading');
-  bx.classList.add('loading');
-  try {
-    const result = await uploadFile(file, key==='id'?'ids':key==='cert'?'certs':'approvals');
-    fdata[key] = result;
-    nm.textContent = file.name;
-    nm.classList.remove('loading');
-    bx.classList.remove('loading');
-    bx.classList.add('done');
-    if (file.type.startsWith('image/')) { pv.src = result.url; pv.style.display='block'; }
-    else pv.style.display='none';
+/* ══ رفع ملفات ══ */
+async function handleFile(input,key){
+  const file=input.files[0];if(!file)return;
+  const nm=document.getElementById(`nm_${key}`);
+  const bx=document.getElementById(`box_${key}`);
+  nm.textContent='⏳ جارٍ الرفع...';nm.classList.add('loading');bx.classList.add('loading');
+  try{
+    const res=await uploadFile(file,key==='id'?'ids':key==='cert'?'certs':'approvals');
+    fdata[key]=res;
+    nm.textContent=file.name;nm.classList.remove('loading');
+    bx.classList.remove('loading');bx.classList.add('done');
     toast(`تم رفع ${file.name} ✓`);
-  } catch(e) {
-    nm.textContent = 'فشل الرفع — حاول مجدداً';
-    nm.classList.remove('loading');
-    bx.classList.remove('loading');
-    toast('فشل رفع الملف: '+e.message, 'e');
-  }
+  }catch(e){nm.textContent='فشل الرفع';nm.classList.remove('loading');bx.classList.remove('loading');toast('فشل: '+e.message,'e');}
 }
-
-function clearF(ev, key) {
-  ev.stopPropagation();
-  fdata[key] = null;
-  document.getElementById(`nm_${key}`).textContent = 'لم يُرفع ملف';
+function clearF(ev,key){
+  ev.stopPropagation();fdata[key]=null;
+  document.getElementById(`nm_${key}`).textContent='لم يُرفع ملف';
   document.getElementById(`nm_${key}`).classList.remove('loading');
-  const pv = document.getElementById(`pv_${key}`);
-  pv.src=''; pv.style.display='none';
   document.getElementById(`box_${key}`).classList.remove('done','loading');
   document.getElementById(`inp_${key}`).value='';
 }
@@ -363,9 +431,6 @@ function clearF(ev, key) {
 /* ══ قيود ══ */
 document.getElementById('fNat').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,10));
 document.getElementById('fPhone').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,12));
-function toggleArr(){const c=document.getElementById('fHasArr'),a=document.getElementById('fArrAmt');a.disabled=!c.checked;if(!c.checked)a.value='';}
-
-/* ══ طيّ ══ */
 function foldF(){folded=!folded;document.getElementById('fBody').style.display=folded?'none':'block';document.getElementById('fBtns').style.display=folded?'none':'flex';document.getElementById('foldBtn').textContent=folded?'فتح ▼':'طيّ ▲';}
 
 /* ══ إحصائيات ══ */
@@ -375,33 +440,97 @@ async function loadStats(){
     <div class="ms"><div class="msn" style="color:var(--accent)">${d.total}</div><div class="msl">إجمالي الطلاب</div></div>
     <div class="ms"><div class="msn" style="color:var(--warning)">${d.withArrears}</div><div class="msl">عليهم متأخرات</div></div>
     <div class="ms"><div class="msn" style="color:var(--danger)">${d.overdue}</div><div class="msl">متأخرون +30 يوم</div></div>
-    <div class="ms"><div class="msn" style="color:var(--success);font-size:1rem">${(d.totalRevenue||0).toLocaleString('ar-SA')}</div><div class="msl">إجمالي الإيرادات ﷼</div></div>`;}
+    <div class="ms"><div class="msn" style="color:var(--warning);font-size:1rem">${d.pendingCount||0}</div><div class="msl">في انتظار الموافقة</div></div>
+    <div class="ms"><div class="msn" style="color:var(--success);font-size:.95rem">${(d.totalRevenue||0).toLocaleString('ar-SA')}</div><div class="msl">إجمالي الإيرادات ﷼</div></div>`;}
   catch{}
 }
 
-/* ══ بحث ══ */
-function doSearch(){const q=document.getElementById('srch').value.trim();if(!q){toast('أدخل نصاً','e');return;}lastQ={q};pg=1;load();}
-function showAll(){document.getElementById('srch').value='';lastQ={};pg=1;load();}
-function showOvd(){document.getElementById('srch').value='';lastQ={overdue:'true'};pg=1;load();}
+/* ══ البحث ══ */
+function doSearch(){
+  const q=document.getElementById('srch').value.trim();
+  if(!q){toast('أدخل نصاً للبحث','e');return;}
+  activeFilters={q};pg=1;renderFilterTags();load();
+}
+function showAll(){document.getElementById('srch').value='';activeFilters={};pg=1;renderFilterTags();load();}
 
-async function load(){
-  if(lastQ===null)return;
-  try{const p=new URLSearchParams({page:pg,limit:20,...lastQ});const d=await apiFetch(`/students?${p}`);render(d.students,d.total,d.page,d.pages);loadStats();}
-  catch(e){alert2(e.message,'error');}
+function applyFilter(extra){
+  document.getElementById('srch').value='';
+  activeFilters=extra;pg=1;renderFilterTags();load();
 }
 
-const mI={'شبكة':'💳','نقدي':'💵','تحويل':'🏦'};
-function docB(v,ic){return v?`<span class="badge badge-green" title="${v}">${ic}✓</span>`:`<span class="badge badge-gray">—</span>`;}
+function toggleAdv(){
+  advOpen=!advOpen;
+  document.getElementById('advFilters').classList.toggle('open',advOpen);
+  document.getElementById('advBtn').textContent=advOpen?'⚙️ إخفاء الفلاتر':'⚙️ بحث متقدم';
+}
 
+function applyAdvSearch(){
+  const q=document.getElementById('srch').value.trim();
+  activeFilters={
+    ...(q?{q}:{}),
+    ...(document.getElementById('fStatus').value        ?{status:document.getElementById('fStatus').value}:{}),
+    ...(document.getElementById('fFilterProg').value    ?{program:document.getElementById('fFilterProg').value}:{}),
+    ...(document.getElementById('fFilterPayType').value ?{paymentType:document.getElementById('fFilterPayType').value}:{}),
+    ...(document.getElementById('fFilterPayMeth').value ?{paymentMethod:document.getElementById('fFilterPayMeth').value}:{}),
+    ...(document.getElementById('fJoinFrom').value      ?{joinFrom:document.getElementById('fJoinFrom').value}:{}),
+    ...(document.getElementById('fJoinTo').value        ?{joinTo:document.getElementById('fJoinTo').value}:{}),
+    ...(document.getElementById('fProgFrom').value      ?{progStartFrom:document.getElementById('fProgFrom').value}:{}),
+    ...(document.getElementById('fProgTo').value        ?{progStartTo:document.getElementById('fProgTo').value}:{}),
+    ...(document.getElementById('fArrMin').value        ?{arrearsMin:document.getElementById('fArrMin').value}:{}),
+    ...(document.getElementById('fArrMax').value        ?{arrearsMax:document.getElementById('fArrMax').value}:{}),
+  };
+  pg=1;renderFilterTags();load();
+}
+
+function clearAdv(){
+  ['fStatus','fFilterProg','fFilterPayType','fFilterPayMeth'].forEach(id=>document.getElementById(id).value='');
+  ['fJoinFrom','fJoinTo','fProgFrom','fProgTo','fArrMin','fArrMax'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('srch').value='';
+  activeFilters={};pg=1;renderFilterTags();load();
+}
+
+/* علامات الفلاتر */
+const filterLabels={q:'بحث',status:'الحالة',program:'البرنامج',paymentType:'نوع الدفع',paymentMethod:'طريقة الدفع',joinFrom:'انضمام من',joinTo:'انضمام إلى',progStartFrom:'بداية من',progStartTo:'بداية إلى',arrearsMin:'متأخرات من',arrearsMax:'متأخرات إلى',overdue:'المتأخرون',hasArrears:'عليهم متأخرات'};
+function renderFilterTags(){
+  const el=document.getElementById('filterTags');
+  const entries=Object.entries(activeFilters).filter(([,v])=>v);
+  if(!entries.length){el.innerHTML='';return;}
+  el.innerHTML=entries.map(([k,v])=>`
+    <span class="ftag">${filterLabels[k]||k}: <strong>${v}</strong>
+      <button onclick="removeFilter('${k}')">✕</button>
+    </span>`).join('');
+}
+function removeFilter(key){delete activeFilters[key];pg=1;renderFilterTags();load();}
+
+async function load(){
+  if(lastQ===null&&!Object.keys(activeFilters).length)return;
+  lastQ=activeFilters;
+  try{
+    const p=new URLSearchParams({page:pg,limit:20,...activeFilters});
+    const d=await apiFetch(`/students?${p}`);
+    render(d.students,d.total,d.page,d.pages);
+    loadStats();
+  }catch(e){alert2(e.message,'error');}
+}
+
+/* ══ رسم الجدول ══ */
+function docB(url,ic){return url?`<span class="badge badge-green" title="مرفوع">${ic}✓</span>`:`<span class="badge badge-gray">—</span>`;}
 function render(list,total,page,pages){
   const tb=document.getElementById('tBody');
   const now=Date.now();
-  if(!list.length){tb.innerHTML='<tr><td colspan="15" class="empty-row">لا توجد نتائج</td></tr>';pgR(0,0);return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="14" class="empty-row">لا توجد نتائج</td></tr>';pgR(0,0);return;}
   tb.innerHTML=list.map((s,i)=>{
     const lp=s.lastPayment?new Date(s.lastPayment):null;
-    const ovd=s.hasArrears&&lp&&(now-lp.getTime())>=30*24*60*60*1000;
+    const ovd=s.hasArrears&&!s.pendingApproval&&lp&&(now-lp.getTime())>=30*24*60*60*1000;
     const days=lp?Math.floor((now-lp.getTime())/86400000):null;
-    return `<tr class="${ovd?'overdue':''} ${s.isRefunded?'refunded':''}">
+    const rowCls=s.isRefunded?'refunded':s.pendingApproval?'pending':ovd?'overdue':'';
+    let statusBadge='';
+    if(s.isRefunded)      statusBadge=`<span class="badge badge-gray">↩️ مُسترد</span>`;
+    else if(s.pendingApproval) statusBadge=`<span class="badge badge-yellow">⏳ انتظار موافقة</span>`;
+    else if(ovd)          statusBadge=`<span class="badge badge-red">⚠️ متأخر ${days}ي</span>`;
+    else if(s.hasArrears) statusBadge=`<span class="badge badge-yellow">💰 متأخرات</span>`;
+    else                  statusBadge=`<span class="badge badge-green">✅ نشط</span>`;
+    return `<tr class="${rowCls}">
       <td>${(page-1)*20+i+1}</td>
       <td><span class="sid">${s.studentId||'—'}</span></td>
       <td style="text-align:right;min-width:120px;font-weight:500;white-space:normal">${s.name}</td>
@@ -412,16 +541,19 @@ function render(list,total,page,pages){
       <td>${docB(s.idCopyUrl,'🪪')}</td>
       <td>${docB(s.certUrl,'🎓')}</td>
       <td>${docB(s.approvalUrl,'✅')}</td>
-      <td><span class="badge badge-blue">${mI[s.paymentMethod]||''} ${s.paymentMethod}</span></td>
-      <td>${s.isRefunded?`<span class="badge badge-yellow">↩️ مُسترد</span>`:s.hasArrears?`<span class="badge badge-red">${Number(s.arrearsAmount).toLocaleString('ar-SA')} ﷼</span>`:`<span class="badge badge-green">لا متأخرات</span>`}</td>
-      <td style="font-size:.8rem">${lp?lp.toLocaleDateString('ar-SA'):'—'}${ovd?`<br><small style="color:var(--danger)">(${days}ي)</small>`:''}</td>
-      <td>${s.isRefunded?`<span class="badge badge-gray">منسحب</span>`:`<span class="badge badge-green">نشط</span>`}</td>
-      <td><div style="display:flex;gap:3px;justify-content:center">
-        <a class="btn btn-sm btn-ghost" href="student-profile.html?id=${s._id}" title="عرض الملف" style="text-decoration:none">👁️</a>
-        ${s.hasArrears&&!s.isRefunded?`<button class="btn btn-sm btn-success" onclick="openM('${s._id}')" title="دفعة">💰</button>`:''}
-        <button class="btn btn-sm btn-ghost" onclick="editS('${s._id}')" title="تعديل">✏️</button>
-        ${user.role==='org_admin'?`<button class="btn btn-sm btn-danger" onclick="delS('${s._id}')" title="حذف">🗑</button>`:''}
-      </div></td>
+      <td>${s.hasArrears&&!s.pendingApproval?`<span class="badge badge-red">${fmtN(s.arrearsAmount)} ﷼</span>`:s.pendingApproval?`<span style="font-size:.78rem;color:var(--text-dim)">—</span>`:`<span class="badge badge-green">لا متأخرات</span>`}</td>
+      <td style="font-size:.8rem">${lp?lp.toLocaleDateString('ar-SA'):'—'}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <div style="display:flex;gap:3px;justify-content:center;flex-wrap:nowrap">
+          <a class="btn btn-sm btn-ghost" href="student-profile.html?id=${s._id}" title="الملف" style="text-decoration:none">👁️</a>
+          ${s.hasArrears&&!s.isRefunded&&!s.pendingApproval?`<button class="btn btn-sm btn-success" onclick="openQP('${s._id}',${s.arrearsAmount})" title="دفعة">💰</button>`:''}
+          ${s.pendingApproval?`<button class="btn btn-sm" style="background:rgba(63,185,80,.1);color:var(--success);border:1px solid var(--success)" onclick="activateStu('${s._id}')" title="تفعيل بعد الموافقة">✅ فعّل</button>`:''}
+          <button class="btn btn-sm btn-ghost" onclick="openHist('${s._id}','${s.name}')" title="الدفعات">📋</button>
+          <button class="btn btn-sm btn-ghost" onclick="editS('${s._id}')" title="تعديل">✏️</button>
+          ${user.role==='org_admin'?`<button class="btn btn-sm btn-danger" onclick="delS('${s._id}')" title="حذف">🗑</button>`:''}
+        </div>
+      </td>
     </tr>`;
   }).join('');
   pgR(pages,page);
@@ -445,64 +577,98 @@ function pgR(pages,page){
 }
 function goP(p){pg=p;load();}
 
-/* ══ إضافة / تعديل ══ */
+/* ══ تفعيل الطالب بعد الموافقة ══ */
+async function activateStu(id){
+  if(!confirm('تأكيد تفعيل الطالب؟ سيظهر في المتأخرين إذا لم يدفع.'))return;
+  try{
+    await apiFetch(`/students/${id}`,{method:'PATCH',body:{pendingApproval:false}});
+    toast('تم تفعيل الطالب ✓');load();
+  }catch(e){toast(e.message,'e');}
+}
+
+/* ══ إضافة طالب ══ */
 document.getElementById('sForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const btn=document.getElementById('subBtn');
   btn.disabled=true;btn.textContent='⏳ جارٍ الحفظ...';
-  const hasArr=document.getElementById('fHasArr').checked;
   const progOpt=document.getElementById('fProg').selectedOptions[0];
+  const pending=document.getElementById('fPending').checked;
+  const price=+document.getElementById('fPrice').value||0;
   const body={
-    name:          document.getElementById('fName').value.trim(),
-    nationalId:    document.getElementById('fNat').value.trim(),
-    phone:         document.getElementById('fPhone').value.trim(),
-    employer:      document.getElementById('fEmp').value.trim(),
-    joinDate:      document.getElementById('fJoin').value||null,
+    name:         document.getElementById('fName').value.trim(),
+    nationalId:   document.getElementById('fNat').value.trim(),
+    phone:        document.getElementById('fPhone').value.trim(),
+    employer:     document.getElementById('fEmp').value.trim(),
+    joinDate:     document.getElementById('fJoin').value||null,
     programStartDate: document.getElementById('fProgStart').value||null,
-    program:       document.getElementById('fProg').value||null,
-    programName:   progOpt?.value?progOpt.text:'',
-    paymentType:   document.getElementById('fPayType').value,
-    programPrice:  +document.getElementById('fPrice').value||0,
-    paymentMethod: document.getElementById('fPayMeth').value,
-    lastPayment:   document.getElementById('fLastPay').value||null,
-    paymentCount:  +document.getElementById('fPayCnt').value||0,
-    hasArrears:    hasArr,
-    arrearsAmount: hasArr?(+document.getElementById('fArrAmt').value||0):0,
-    notes:         document.getElementById('fNotes').value.trim(),
-    ...(fdata.id  ?{idCopyFileName:fdata.id.name,   idCopyUrl:fdata.id.url,    idCopyPublicId:fdata.id.publicId}:{}),
-    ...(fdata.cert?{certFileName:fdata.cert.name,   certUrl:fdata.cert.url,    certPublicId:fdata.cert.publicId}:{}),
+    program:      document.getElementById('fProg').value||null,
+    programName:  progOpt?.value?progOpt.text:'',
+    paymentType:  document.getElementById('fPayType').value,
+    programPrice: price,
+    pendingApproval: pending,
+    // الدفع يُسجَّل بعد الإضافة — لذا نضع متأخرات بالسعر كاملاً إذا لم يكن pending
+    hasArrears:   !pending && price > 0,
+    arrearsAmount:!pending ? price : 0,
+    notes:        document.getElementById('fNotes').value.trim(),
+    ...(fdata.id  ?{idCopyFileName:fdata.id.name,  idCopyUrl:fdata.id.url,  idCopyPublicId:fdata.id.publicId}:{}),
+    ...(fdata.cert?{certFileName:fdata.cert.name,  certUrl:fdata.cert.url,  certPublicId:fdata.cert.publicId}:{}),
     ...(fdata.appr?{approvalFileName:fdata.appr.name,approvalUrl:fdata.appr.url,approvalPublicId:fdata.appr.publicId}:{}),
   };
   try{
-    if(editId){await apiFetch(`/students/${editId}`,{method:'PATCH',body});toast('تم حفظ التعديل ✓');}
-    else{await apiFetch('/students',{method:'POST',body});toast('تم إضافة الطالب بنجاح ✓');}
-    resetF();if(lastQ!==null)load();
+    const res=await apiFetch('/students',{method:'POST',body});
+    newStuId=res.student._id;
+    newStuName=res.student.name;
+    newStuPrice=price;
+    newStuPending=pending;
+    resetF();
+    if(lastQ!==null)load();
+    // إذا pending لا تسأل عن الدفع
+    if(pending){toast('تم إضافة الطالب — في انتظار الموافقة ✓');return;}
+    // افتح نافذة الدفع
+    document.getElementById('aaStudentName').textContent=`الطالب: ${newStuName}`;
+    document.getElementById('aaProgramPrice').textContent=price>0?`${fmtN(price)} ريال`:'لم يُحدد سعر';
+    document.getElementById('paySection').style.display='none';
+    document.getElementById('afterAddModal').classList.add('open');
   }catch(err){alert2(err.message,'error');}
   finally{btn.disabled=false;btn.textContent=editId?'💾 حفظ التعديل':'➕ إضافة طالب';}
 });
 
+function showPaySection(){document.getElementById('paySection').style.display='block';}
+
+async function submitAfterPay(){
+  const amt=+document.getElementById('aaPayAmt').value;
+  const meth=document.getElementById('aaPayMeth').value;
+  const note=document.getElementById('aaPayNote').value.trim();
+  const err=document.getElementById('aaErr');
+  err.style.display='none';
+  if(!amt||amt<=0){err.textContent='أدخل مبلغاً صحيحاً.';err.style.display='block';return;}
+  try{
+    await apiFetch(`/payments/${newStuId}`,{method:'POST',body:{amount:amt,note,paymentMethod:meth}});
+    closeM('afterAddModal');
+    toast(`تم تسجيل الدفعة — ${fmtN(amt)} ريال ✓`);
+    load();
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+}
+
+function skipPay(){closeM('afterAddModal');toast('تم إضافة الطالب بنجاح ✓');}
+
+/* ══ تعديل ══ */
 async function editS(id){
   try{
-    const p=new URLSearchParams({page:pg,limit:20,...lastQ});
+    const p=new URLSearchParams({page:pg,limit:20,...activeFilters});
     const d=await apiFetch(`/students?${p}`);
     const s=d.students.find(x=>x._id===id);if(!s)return;
-    document.getElementById('fName').value     =s.name;
-    document.getElementById('fNat').value      =s.nationalId;
-    document.getElementById('fPhone').value    =s.phone;
-    document.getElementById('fEmp').value      =s.employer||'';
-    document.getElementById('fJoin').value     =s.joinDate?s.joinDate.slice(0,10):'';
-    document.getElementById('fProgStart').value=s.programStartDate?s.programStartDate.slice(0,10):'';
-    document.getElementById('fProg').value     =s.program?._id||s.program||'';
-    document.getElementById('fPayType').value  =s.paymentType||'كاش';
-    document.getElementById('fPrice').value    =s.programPrice||0;
-    document.getElementById('fPayMeth').value  =s.paymentMethod||'شبكة';
-    document.getElementById('fLastPay').value  =s.lastPayment?s.lastPayment.slice(0,10):'';
-    document.getElementById('fPayCnt').value   =s.paymentCount||0;
-    document.getElementById('fHasArr').checked =!!s.hasArrears;
-    document.getElementById('fArrAmt').value   =s.arrearsAmount||0;
-    document.getElementById('fArrAmt').disabled=!s.hasArrears;
-    document.getElementById('fNotes').value    =s.notes||'';
-    // أسماء الملفات الموجودة
+    document.getElementById('fName').value       =s.name;
+    document.getElementById('fNat').value        =s.nationalId;
+    document.getElementById('fPhone').value      =s.phone;
+    document.getElementById('fEmp').value        =s.employer||'';
+    document.getElementById('fJoin').value       =s.joinDate?s.joinDate.slice(0,10):'';
+    document.getElementById('fProgStart').value  =s.programStartDate?s.programStartDate.slice(0,10):'';
+    document.getElementById('fProg').value       =s.program?._id||s.program||'';
+    document.getElementById('fPayType').value    =s.paymentType||'كاش';
+    document.getElementById('fPrice').value      =s.programPrice||0;
+    document.getElementById('fPending').checked  =!!s.pendingApproval;
+    document.getElementById('fNotes').value      =s.notes||'';
     if(s.idCopyFileName){document.getElementById('nm_id').textContent=s.idCopyFileName;document.getElementById('box_id').classList.add('done');}
     if(s.certFileName)  {document.getElementById('nm_cert').textContent=s.certFileName;document.getElementById('box_cert').classList.add('done');}
     if(s.approvalFileName){document.getElementById('nm_appr').textContent=s.approvalFileName;document.getElementById('box_appr').classList.add('done');}
@@ -515,21 +681,18 @@ async function editS(id){
 }
 
 async function delS(id){
-  if(!confirm('حذف الطالب؟ لا يمكن التراجع.'))return;
+  if(!confirm('حذف الطالب؟'))return;
   try{await apiFetch(`/students/${id}`,{method:'DELETE'});toast('تم الحذف');load();}
   catch(e){alert2(e.message,'error');}
 }
 
 function resetF(){
   document.getElementById('sForm').reset();
-  document.getElementById('fArrAmt').disabled=true;
   document.getElementById('fPrice').value='';
-  document.getElementById('fProgStart').value='';
   fdata={id:null,cert:null,appr:null};
   ['id','cert','appr'].forEach(k=>{
     document.getElementById(`nm_${k}`).textContent='لم يُرفع ملف';
     document.getElementById(`nm_${k}`).classList.remove('loading');
-    const pv=document.getElementById(`pv_${k}`);pv.src='';pv.style.display='none';
     document.getElementById(`box_${k}`).classList.remove('done','loading');
     document.getElementById(`inp_${k}`).value='';
   });
@@ -538,232 +701,48 @@ function resetF(){
   document.getElementById('subBtn').textContent='➕ إضافة طالب';
 }
 
-/* ══ Modal ══ */
-async function openM(id, tab='pay'){
-  try{
-    const p=new URLSearchParams({page:pg,limit:20,...lastQ});
-    const d=await apiFetch(`/students?${p}`);
-    curStu=d.students.find(x=>x._id===id);if(!curStu)return;
-    document.getElementById('mName').textContent=curStu.name;
-    document.getElementById('mSid').textContent=curStu.studentId||'';
-    document.getElementById('mInfo').textContent=`${curStu.nationalId} | ${curStu.phone} | ${curStu.programName||''}`;
-    document.getElementById('mArr').textContent=`${Number(curStu.arrearsAmount).toLocaleString('ar-SA')} ريال`;
-    document.getElementById('mPaid').textContent=`${Number(curStu.totalPaid||0).toLocaleString('ar-SA')} ريال`;
-    document.getElementById('payAmt').value='';
-    document.getElementById('payNote').value='';
-    document.getElementById('payErr').style.display='none';
-    // تبويب محدد
-    document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('on'));
-    document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
-    document.getElementById(`pan_${tab}`).classList.add('on');
-    document.querySelectorAll('.mtab')[['pay','hist','docs','refund','pdf'].indexOf(tab)]?.classList.add('on');
-    if(tab==='hist')loadHist();
-    if(tab==='docs')loadDocs();
-    if(tab==='pdf')loadPDF();
-    document.getElementById('stuModal').classList.add('open');
-  }catch(e){alert2(e.message,'error');}
+/* ══ دفعة سريعة ══ */
+function openQP(id,arrears){
+  curStuId=id;
+  document.getElementById('qpArrears').textContent=fmtN(arrears)+' ريال';
+  document.getElementById('qpAmt').value='';
+  document.getElementById('qpNote').value='';
+  document.getElementById('qpErr').style.display='none';
+  document.getElementById('quickPayModal').classList.add('open');
 }
-
-function mTab(name,btn){
-  document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
-  document.getElementById(`pan_${name}`).classList.add('on');
-  btn.classList.add('on');
-  if(name==='hist')loadHist();
-  if(name==='docs')loadDocs();
-  if(name==='pdf')loadPDF();
-}
-
-/* دفعة */
-async function submitPay(){
-  const amt=+document.getElementById('payAmt').value;
-  const note=document.getElementById('payNote').value.trim();
-  const meth=document.getElementById('payMeth').value;
-  const err=document.getElementById('payErr');err.style.display='none';
+async function submitQP(){
+  const amt=+document.getElementById('qpAmt').value;
+  const meth=document.getElementById('qpMeth').value;
+  const note=document.getElementById('qpNote').value.trim();
+  const err=document.getElementById('qpErr');err.style.display='none';
   if(!amt||amt<=0){err.textContent='أدخل مبلغاً صحيحاً.';err.style.display='block';return;}
   try{
-    const d=await apiFetch(`/payments/${curStu._id}`,{method:'POST',body:{amount:amt,note,paymentMethod:meth}});
-    closeM('stuModal');toast(d.message||'تم تسجيل الدفعة ✓');load();
+    const d=await apiFetch(`/payments/${curStuId}`,{method:'POST',body:{amount:amt,note,paymentMethod:meth}});
+    closeM('quickPayModal');toast(d.message||'تم ✓');load();
   }catch(e){err.textContent=e.message;err.style.display='block';}
 }
 
-/* سجل الدفعات */
-async function loadHist(){
-  const el=document.getElementById('payList');
-  el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:24px">جارٍ التحميل...</p>';
+/* ══ سجل الدفعات ══ */
+async function openHist(id,name){
+  curStuId=id;
+  document.getElementById('histName').textContent=`📋 دفعات: ${name}`;
+  document.getElementById('histList').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:24px">جارٍ التحميل...</p>';
+  document.getElementById('histModal').classList.add('open');
   try{
-    const d=await apiFetch(`/payments/${curStu._id}`);
-    stuPayments=d.payments;
-    if(!d.payments.length){el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:24px">لا توجد دفعات</p>';return;}
-    el.innerHTML=d.payments.map(p=>{
+    const d=await apiFetch(`/payments/${id}`);
+    if(!d.payments.length){document.getElementById('histList').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:24px">لا توجد دفعات</p>';return;}
+    document.getElementById('histList').innerHTML=d.payments.map(p=>{
       const isRef=p.type==='استرداد';
       return `<div class="pi">
-        <div class="pa ${isRef?'ref':'pay'}">${isRef?'↩️':''} ${Number(p.amount).toLocaleString('ar-SA')} ﷼</div>
+        <div class="pa ${isRef?'ref':'pay'}">${isRef?'↩️':''} ${fmtN(p.amount)} ﷼</div>
         <div class="pm">
           <div class="pd">📅 ${new Date(p.createdAt).toLocaleDateString('ar-SA')} ${new Date(p.createdAt).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</div>
           <div class="pb">👤 ${p.paidBy?.fullName||'—'}${p.note?` | 📝 ${p.note}`:''}</div>
         </div>
-        <span class="badge ${isRef?'badge-yellow':'badge-blue'}">${mI[p.paymentMethod]||''} ${p.paymentMethod||'—'}</span>
+        <span class="badge ${isRef?'badge-yellow':'badge-blue'}">${mI[p.paymentMethod]||''} ${p.paymentMethod}</span>
       </div>`;
     }).join('');
-  }catch(e){el.innerHTML=`<p style="color:var(--danger);text-align:center;padding:24px">${e.message}</p>`;}
-}
-
-/* وثائق */
-function loadDocs(){
-  if(!curStu)return;
-  const s=curStu;
-  const box=(lbl,ic,url,fname)=>`
-    <div style="text-align:center">
-      <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">${ic} ${lbl}</div>
-      ${url
-        ?`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
-            <img src="${url}" style="max-width:100%;max-height:110px;object-fit:contain;border-radius:4px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
-            <div style="font-size:2rem;display:none">📄</div>
-            <div style="font-size:.72rem;color:var(--success);margin-top:6px">${fname||''}</div>
-            <a href="${url}" target="_blank" class="btn btn-ghost btn-sm" style="margin-top:8px;display:inline-block">🔗 فتح</a></div>`
-        :`<div style="background:var(--bg3);border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;color:var(--text-dim);font-size:.82rem">لم يُرفع</div>`}
-    </div>`;
-  document.getElementById('docsGrid').innerHTML=
-    box('الهوية','🪪',s.idCopyUrl,s.idCopyFileName)+
-    box('الشهادة','🎓',s.certUrl,s.certFileName)+
-    box('موافقة جهة العمل','✅',s.approvalUrl,s.approvalFileName);
-}
-
-/* ══ تقرير PDF ══ */
-function loadPDF(){
-  if(!curStu)return;
-  const s=curStu;
-  document.getElementById('pdfPreview').innerHTML=`
-    <div style="font-size:1rem;font-weight:700;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">ملف الطالب — ${s.name}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px">
-      <div>🆔 الرقم الجامعي: <strong>${s.studentId||'—'}</strong></div>
-      <div>📋 رقم الهوية: <strong>${s.nationalId}</strong></div>
-      <div>📱 الجوال: <strong>${s.phone}</strong></div>
-      <div>🏢 جهة العمل: <strong>${s.employer||'—'}</strong></div>
-      <div>📚 البرنامج: <strong>${s.programName||'—'}</strong></div>
-      <div>💳 نوع الدفع: <strong>${s.paymentType||'—'}</strong></div>
-      <div>💰 السعر: <strong>${Number(s.programPrice||0).toLocaleString('ar-SA')} ريال</strong></div>
-      <div>💵 إجمالي المدفوع: <strong>${Number(s.totalPaid||0).toLocaleString('ar-SA')} ريال</strong></div>
-      <div>⚠️ المتأخرات: <strong>${s.hasArrears?Number(s.arrearsAmount).toLocaleString('ar-SA')+' ريال':'لا متأخرات'}</strong></div>
-      <div>📅 آخر سداد: <strong>${s.lastPayment?new Date(s.lastPayment).toLocaleDateString('ar-SA'):'—'}</strong></div>
-      <div>🔢 مرات السداد: <strong>${s.paymentCount||0}</strong></div>
-      <div>📆 تاريخ الانضمام: <strong>${s.joinDate?new Date(s.joinDate).toLocaleDateString('ar-SA'):'—'}</strong></div>
-      <div>🪪 الهوية: <strong>${s.idCopyFileName?'✅ مرفوعة':'❌ غير مرفوعة'}</strong></div>
-      <div>🎓 الشهادة: <strong>${s.certFileName?'✅ مرفوعة':'❌ غير مرفوعة'}</strong></div>
-      <div>✅ موافقة جهة العمل: <strong>${s.approvalFileName?'✅ مرفوعة':'❌ غير مرفوعة'}</strong></div>
-      <div>📝 ملاحظات: <strong>${s.notes||'—'}</strong></div>
-    </div>`;
-}
-
-function printReport(){
-  if(!curStu)return;
-  const s=curStu;
-  const org = user.org?.name || '';
-  const now = new Date().toLocaleDateString('ar-SA');
-
-  const w = window.open('','_blank','width=800,height=900');
-  w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
-    <meta charset="UTF-8"/><title>ملف الطالب — ${s.name}</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap');
-      * { box-sizing:border-box; margin:0; padding:0; }
-      body { font-family:'IBM Plex Sans Arabic',Arial,sans-serif; background:#fff; color:#111; padding:32px; font-size:14px; }
-      h1  { font-size:1.4rem; margin-bottom:4px; }
-      .org{ font-size:.9rem; color:#555; margin-bottom:20px; }
-      .section { margin-bottom:20px; }
-      .sec-title { font-size:.8rem; font-weight:700; color:#2f81f7; border-bottom:2px solid #2f81f7; padding-bottom:4px; margin-bottom:12px; letter-spacing:.04em; }
-      .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; }
-      .row { display:flex; gap:8px; font-size:.88rem; }
-      .lbl { color:#666; min-width:130px; }
-      .val { font-weight:600; }
-      .pay-table { width:100%; border-collapse:collapse; font-size:.85rem; margin-top:8px; }
-      .pay-table th { background:#f0f4f8; padding:7px 10px; text-align:right; font-weight:600; border:1px solid #ddd; }
-      .pay-table td { padding:7px 10px; border:1px solid #ddd; }
-      .pay-table tr:nth-child(even) { background:#fafafa; }
-      .badge-y { background:#fff8e1;color:#b45309;border:1px solid #d97706;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600; }
-      .badge-g { background:#f0fdf4;color:#166534;border:1px solid #16a34a;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600; }
-      .footer { margin-top:30px; text-align:center; font-size:.78rem; color:#888; border-top:1px solid #ddd; padding-top:12px; }
-      @media print { body { padding:20px; } }
-    </style></head><body>
-    <h1>🗂️ ملف الطالب</h1>
-    <div class="org">📍 ${org} &nbsp;|&nbsp; تاريخ الطباعة: ${now}</div>
-
-    <div class="section">
-      <div class="sec-title">👤 البيانات الشخصية</div>
-      <div class="grid">
-        <div class="row"><span class="lbl">الاسم الكامل:</span><span class="val">${s.name}</span></div>
-        <div class="row"><span class="lbl">الرقم الجامعي:</span><span class="val">${s.studentId||'—'}</span></div>
-        <div class="row"><span class="lbl">رقم الهوية:</span><span class="val">${s.nationalId}</span></div>
-        <div class="row"><span class="lbl">رقم الجوال:</span><span class="val">${s.phone}</span></div>
-        <div class="row"><span class="lbl">جهة العمل:</span><span class="val">${s.employer||'—'}</span></div>
-        <div class="row"><span class="lbl">تاريخ الانضمام:</span><span class="val">${s.joinDate?new Date(s.joinDate).toLocaleDateString('ar-SA'):'—'}</span></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sec-title">📚 البرنامج الدراسي</div>
-      <div class="grid">
-        <div class="row"><span class="lbl">البرنامج:</span><span class="val">${s.programName||'—'}</span></div>
-        <div class="row"><span class="lbl">نوع الدفع:</span><span class="val">${s.paymentType||'—'}</span></div>
-        <div class="row"><span class="lbl">سعر البرنامج:</span><span class="val">${Number(s.programPrice||0).toLocaleString('ar-SA')} ريال</span></div>
-        <div class="row"><span class="lbl">طريقة الدفع:</span><span class="val">${s.paymentMethod||'—'}</span></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sec-title">💰 الحالة المالية</div>
-      <div class="grid">
-        <div class="row"><span class="lbl">إجمالي المدفوع:</span><span class="val" style="color:#166534">${Number(s.totalPaid||0).toLocaleString('ar-SA')} ريال</span></div>
-        <div class="row"><span class="lbl">المتأخرات:</span><span class="val" style="color:${s.hasArrears?'#dc2626':'#166534'}">${s.hasArrears?Number(s.arrearsAmount).toLocaleString('ar-SA')+' ريال':'لا متأخرات'}</span></div>
-        <div class="row"><span class="lbl">عدد مرات السداد:</span><span class="val">${s.paymentCount||0}</span></div>
-        <div class="row"><span class="lbl">آخر سداد:</span><span class="val">${s.lastPayment?new Date(s.lastPayment).toLocaleDateString('ar-SA'):'—'}</span></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sec-title">📎 الوثائق</div>
-      <div class="grid">
-        <div class="row"><span class="lbl">صورة الهوية:</span><span class="val">${s.idCopyFileName?`<span class="badge-g">✅ مرفوعة</span>`:`<span class="badge-y">❌ غير مرفوعة</span>`}</span></div>
-        <div class="row"><span class="lbl">المؤهل العلمي:</span><span class="val">${s.certFileName?`<span class="badge-g">✅ مرفوع</span>`:`<span class="badge-y">❌ غير مرفوع</span>`}</span></div>
-        <div class="row"><span class="lbl">موافقة جهة العمل:</span><span class="val">${s.approvalFileName?`<span class="badge-g">✅ مرفوعة</span>`:`<span class="badge-y">❌ غير مرفوعة</span>`}</span></div>
-      </div>
-    </div>
-
-    ${stuPayments.length?`
-    <div class="section">
-      <div class="sec-title">📋 سجل الدفعات</div>
-      <table class="pay-table">
-        <thead><tr><th>#</th><th>التاريخ</th><th>المبلغ</th><th>طريقة السداد</th><th>النوع</th><th>بواسطة</th><th>ملاحظة</th></tr></thead>
-        <tbody>
-          ${stuPayments.map((p,i)=>`<tr>
-            <td>${i+1}</td>
-            <td>${new Date(p.createdAt).toLocaleDateString('ar-SA')}</td>
-            <td style="font-weight:600;color:${p.type==='استرداد'?'#dc2626':'#166534'}">${Number(p.amount).toLocaleString('ar-SA')} ريال</td>
-            <td>${p.paymentMethod}</td>
-            <td>${p.type}</td>
-            <td>${p.paidBy?.fullName||'—'}</td>
-            <td>${p.note||'—'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`:''}
-
-    ${s.notes?`<div class="section"><div class="sec-title">📝 ملاحظات</div><p style="font-size:.88rem;color:#444;line-height:1.7">${s.notes}</p></div>`:''}
-
-    <div class="footer">نظام إدراء لأرشفة الطلاب &nbsp;|&nbsp; ${org} &nbsp;|&nbsp; تمت الطباعة: ${now}</div>
-    <script>window.onload=()=>window.print();<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
-/* استرداد */
-async function submitRefund(){
-  if(!confirm('تأكيد الاسترداد؟ لا يمكن التراجع.'))return;
-  try{
-    const d=await apiFetch(`/students/${curStu._id}/refund`,{method:'POST',body:{paymentMethod:document.getElementById('refMeth').value,note:document.getElementById('refNote').value.trim()}});
-    closeM('stuModal');toast(d.message||'تم تسجيل الاسترداد ✓');load();
-  }catch(e){alert2(e.message,'error');}
+  }catch(e){document.getElementById('histList').innerHTML=`<p style="color:var(--danger);text-align:center;padding:24px">${e.message}</p>`;}
 }
 
 /* ══ استيراد Excel ══ */
@@ -779,7 +758,23 @@ function importXlsx(input){
       if(!rows||rows.length<2){toast('الملف فارغ','e');return;}
       const hdr=rows[0].map(h=>String(h||'').trim().toLowerCase().replace(/\s+/g,' '));
       const fi=(...cc)=>{for(const c of cc){const cl=c.toLowerCase().trim();let i=hdr.findIndex(h=>h===cl);if(i!==-1)return i;i=hdr.findIndex(h=>h.replace(/\s+/g,'')===cl.replace(/\s+/g,''));if(i!==-1)return i;i=hdr.findIndex(h=>h.includes(cl)||cl.includes(h));if(i!==-1)return i;}return -1;};
-      const ci={name:fi('الاسم','اسم الطالب','name'),natId:fi('رقم الهوية','الهوية','nationalid','national id'),phone:fi('الجوال','الهاتف','phone','mobile'),employer:fi('جهة العمل','employer'),payMeth:fi('طريقة الدفع','payment method'),hasArr:fi('متأخرات','عليه متأخرات'),arrAmt:fi('قيمة المتأخرات','arrears amount'),lastPay:fi('آخر سداد','last payment'),payCnt:fi('عدد مرات السداد','payment count'),join:fi('تاريخ الانضمام','join date'),progStart:fi('تاريخ بداية البرنامج','program start date','programstartdate'),notes:fi('الملاحظات','notes'),prog:fi('البرنامج','program'),payType:fi('نوع الدفع','payment type')};
+      const ci={
+        name:fi('الاسم','اسم الطالب','name'),
+        natId:fi('رقم الهوية','الهوية','nationalid'),
+        phone:fi('الجوال','الهاتف','phone','mobile'),
+        employer:fi('جهة العمل','employer'),
+        payMeth:fi('طريقة الدفع','payment method'),
+        hasArr:fi('متأخرات','عليه متأخرات'),
+        arrAmt:fi('قيمة المتأخرات','arrears amount'),
+        lastPay:fi('آخر سداد','last payment'),
+        payCnt:fi('عدد مرات السداد','payment count'),
+        join:fi('تاريخ الانضمام','join date'),
+        progStart:fi('تاريخ بداية البرنامج','program start'),
+        notes:fi('الملاحظات','notes'),
+        prog:fi('البرنامج','program'),
+        payType:fi('نوع الدفع','payment type'),
+        pending:fi('في انتظار الموافقة','pending'),
+      };
       const toDate=v=>{if(!v)return null;if(v instanceof Date)return v.toISOString().slice(0,10);if(typeof v==='number'&&v>1000)return new Date(Math.round((v-25569)*86400*1000)).toISOString().slice(0,10);return String(v).trim()||null;};
       const dataRows=rows.slice(1).filter(r=>r.some(c=>c!==''&&c!=null));
       if(!dataRows.length){toast('لا توجد بيانات','e');return;}
@@ -790,13 +785,17 @@ function importXlsx(input){
         const phone=ci.phone!==-1?String(r[ci.phone]||'').replace(/\D/g,''):'';
         if(!name||!natId||!phone){fail++;continue;}
         const hasArr=ci.hasArr!==-1?(String(r[ci.hasArr]||'').trim()==='نعم'||String(r[ci.hasArr]||'').toLowerCase()==='yes'):false;
+        const isPending=ci.pending!==-1?(String(r[ci.pending]||'').trim()==='نعم'||String(r[ci.pending]||'').toLowerCase()==='yes'):false;
         let pm=ci.payMeth!==-1?String(r[ci.payMeth]||'شبكة').trim():'شبكة';
         if(pm==='كاش'||pm==='cash')pm='نقدي';if(!['شبكة','نقدي','تحويل'].includes(pm))pm='شبكة';
         let pt=ci.payType!==-1?String(r[ci.payType]||'كاش').trim():'كاش';
         if(!['كاش','أقساط'].includes(pt))pt='كاش';
         let progId=null,progName='';
         if(ci.prog!==-1&&r[ci.prog]){const pn=String(r[ci.prog]).trim();const found=progs.find(p=>p.name===pn);if(found){progId=found._id;progName=found.name;}else progName=pn;}
-        try{await apiFetch('/students',{method:'POST',body:{name,nationalId:natId,phone,employer:ci.employer!==-1?String(r[ci.employer]||''):'',paymentMethod:pm,paymentType:pt,program:progId,programName:progName,hasArrears:hasArr,arrearsAmount:hasArr?(+String(r[ci.arrAmt]||0)||0):0,lastPayment:toDate(ci.lastPay!==-1?r[ci.lastPay]:null),paymentCount:ci.payCnt!==-1?+String(r[ci.payCnt]||0)||0:0,joinDate:toDate(ci.join!==-1?r[ci.join]:null),programStartDate:toDate(ci.progStart!==-1?r[ci.progStart]:null),notes:ci.notes!==-1?String(r[ci.notes]||''):''}});ok++;}catch{fail++;}
+        try{
+          await apiFetch('/students',{method:'POST',body:{name,nationalId:natId,phone,employer:ci.employer!==-1?String(r[ci.employer]||''):'',paymentMethod:pm,paymentType:pt,program:progId,programName:progName,hasArrears:hasArr&&!isPending,arrearsAmount:hasArr&&!isPending?(+String(r[ci.arrAmt]||0)||0):0,lastPayment:toDate(ci.lastPay!==-1?r[ci.lastPay]:null),paymentCount:ci.payCnt!==-1?+String(r[ci.payCnt]||0)||0:0,joinDate:toDate(ci.join!==-1?r[ci.join]:null),programStartDate:toDate(ci.progStart!==-1?r[ci.progStart]:null),pendingApproval:isPending,notes:ci.notes!==-1?String(r[ci.notes]||''):''}});
+          ok++;
+        }catch{fail++;}
       }
       toast(`استيراد: ${ok} نجح${fail?` | ${fail} فشل`:''} ✓`);load();
     }catch(err){toast('خطأ: '+err.message,'e');}
@@ -808,10 +807,11 @@ function importXlsx(input){
 /* ══ تصدير Excel ══ */
 async function exportXlsx(){
   try{
-    const d=await apiFetch('/students?limit=5000');
+    const p=new URLSearchParams({limit:5000,...activeFilters});
+    const d=await apiFetch(`/students?${p}`);
     if(!d.students.length){toast('لا بيانات','e');return;}
-    const hdr=['#','الرقم الجامعي','الاسم','رقم الهوية','الجوال','جهة العمل','البرنامج','نوع الدفع','السعر','ملف الهوية','ملف الشهادة','موافقة جهة العمل','طريقة الدفع','متأخرات','قيمة المتأخرات','إجمالي المدفوع','آخر سداد','مرات السداد','تاريخ الانضمام','تاريخ بداية البرنامج','الحالة','ملاحظات'];
-    const rows=d.students.map((s,i)=>[i+1,s.studentId||'',s.name,s.nationalId,s.phone,s.employer||'',s.programName||'',s.paymentType||'',s.programPrice||0,s.idCopyFileName||'',s.certFileName||'',s.approvalFileName||'',s.paymentMethod,s.hasArrears?'نعم':'لا',+s.arrearsAmount||0,+s.totalPaid||0,s.lastPayment?s.lastPayment.slice(0,10):'',s.paymentCount||0,s.joinDate?s.joinDate.slice(0,10):'',s.programStartDate?s.programStartDate.slice(0,10):'',s.isRefunded?'مُسترد':'نشط',s.notes||'']);
+    const hdr=['#','الرقم الجامعي','الاسم','رقم الهوية','الجوال','جهة العمل','البرنامج','نوع الدفع','السعر','طريقة الدفع','متأخرات','قيمة المتأخرات','إجمالي المدفوع','آخر سداد','مرات السداد','تاريخ الانضمام','تاريخ بداية البرنامج','الحالة','في انتظار الموافقة','ملف الهوية','ملف الشهادة','موافقة جهة العمل','ملاحظات'];
+    const rows=d.students.map((s,i)=>[i+1,s.studentId||'',s.name,s.nationalId,s.phone,s.employer||'',s.programName||'',s.paymentType||'',s.programPrice||0,s.paymentMethod,s.hasArrears?'نعم':'لا',+s.arrearsAmount||0,+s.totalPaid||0,s.lastPayment?s.lastPayment.slice(0,10):'',s.paymentCount||0,s.joinDate?s.joinDate.slice(0,10):'',s.programStartDate?s.programStartDate.slice(0,10):'',s.isRefunded?'مُسترد':'نشط',s.pendingApproval?'نعم':'لا',s.idCopyFileName||'',s.certFileName||'',s.approvalFileName||'',s.notes||'']);
     const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
     ws['!cols']=hdr.map((_,ci)=>({wch:Math.max(hdr[ci].length,...rows.map(r=>String(r[ci]||'').length))+2}));
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'الطلاب');
@@ -823,14 +823,12 @@ async function exportXlsx(){
 function toast(msg,type='s'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3200);}
 function alert2(msg,type='info'){const el=document.getElementById('alertBox');el.innerHTML=`<div class="alert alert-${type==='error'?'error':'info'}" style="margin:0 0 12px">${msg}</div>`;setTimeout(()=>el.innerHTML='',5000);}
 function closeM(id){document.getElementById(id).classList.remove('open');}
-
 document.getElementById('srch').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 
-// تحقق من فلتر المتأخرين من dashboard
-if(sessionStorage.getItem('edra_filter')==='overdue'){sessionStorage.removeItem('edra_filter');showOvd();}
+// فلتر من dashboard
+if(sessionStorage.getItem('edra_filter')==='overdue'){sessionStorage.removeItem('edra_filter');applyFilter({overdue:'true'});}
 
-loadProgs();
-loadStats();
+loadProgs();loadStats();
 </script>
 </body>
 </html>

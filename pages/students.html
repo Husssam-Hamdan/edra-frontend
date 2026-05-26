@@ -111,6 +111,7 @@
               <div class="field g2"><label>الاسم الرباعي <span style="color:var(--danger)">*</span></label><input id="fName" placeholder="محمد عبدالله الغامدي الزهراني" required/></div>
               <div class="field"><label>رقم الهوية <span style="color:var(--danger)">*</span></label><input id="fNat" placeholder="1XXXXXXXXX" maxlength="10" inputmode="numeric" required/></div>
               <div class="field"><label>رقم الجوال <span style="color:var(--danger)">*</span></label><input id="fPhone" placeholder="05XXXXXXXX" maxlength="12" inputmode="tel" required/></div>
+              <div class="field"><label>البريد الإلكتروني</label><input id="fEmail" placeholder="example@email.com" type="email"/></div>
               <div class="field"><label>جهة العمل</label><input id="fEmp" placeholder="وزارة التعليم"/></div>
               <div class="field"><label>تاريخ الانضمام</label><input id="fJoin" type="date"/></div>
             </div>
@@ -598,6 +599,7 @@ document.getElementById('sForm').addEventListener('submit',async e=>{
     name:         document.getElementById('fName').value.trim(),
     nationalId:   document.getElementById('fNat').value.trim(),
     phone:        document.getElementById('fPhone').value.trim(),
+    email:        document.getElementById('fEmail').value.trim(),
     employer:     document.getElementById('fEmp').value.trim(),
     joinDate:     document.getElementById('fJoin').value||null,
     programStartDate: document.getElementById('fProgStart').value||null,
@@ -661,6 +663,7 @@ async function editS(id){
     document.getElementById('fName').value       =s.name;
     document.getElementById('fNat').value        =s.nationalId;
     document.getElementById('fPhone').value      =s.phone;
+    document.getElementById('fEmail').value      =s.email||'';
     document.getElementById('fEmp').value        =s.employer||'';
     document.getElementById('fJoin').value       =s.joinDate?s.joinDate.slice(0,10):'';
     document.getElementById('fProgStart').value  =s.programStartDate?s.programStartDate.slice(0,10):'';
@@ -689,6 +692,7 @@ async function delS(id){
 function resetF(){
   document.getElementById('sForm').reset();
   document.getElementById('fPrice').value='';
+  document.getElementById('fEmail').value='';
   fdata={id:null,cert:null,appr:null};
   ['id','cert','appr'].forEach(k=>{
     document.getElementById(`nm_${k}`).textContent='لم يُرفع ملف';
@@ -762,6 +766,7 @@ function importXlsx(input){
         name:fi('الاسم','اسم الطالب','name'),
         natId:fi('رقم الهوية','الهوية','nationalid'),
         phone:fi('الجوال','الهاتف','phone','mobile'),
+        email:fi('البريد الإلكتروني','البريد','email','mail'),
         employer:fi('جهة العمل','employer'),
         payMeth:fi('طريقة الدفع','payment method'),
         hasArr:fi('متأخرات','عليه متأخرات'),
@@ -793,7 +798,7 @@ function importXlsx(input){
         let progId=null,progName='';
         if(ci.prog!==-1&&r[ci.prog]){const pn=String(r[ci.prog]).trim();const found=progs.find(p=>p.name===pn);if(found){progId=found._id;progName=found.name;}else progName=pn;}
         try{
-          await apiFetch('/students',{method:'POST',body:{name,nationalId:natId,phone,employer:ci.employer!==-1?String(r[ci.employer]||''):'',paymentMethod:pm,paymentType:pt,program:progId,programName:progName,hasArrears:hasArr&&!isPending,arrearsAmount:hasArr&&!isPending?(+String(r[ci.arrAmt]||0)||0):0,lastPayment:toDate(ci.lastPay!==-1?r[ci.lastPay]:null),paymentCount:ci.payCnt!==-1?+String(r[ci.payCnt]||0)||0:0,joinDate:toDate(ci.join!==-1?r[ci.join]:null),programStartDate:toDate(ci.progStart!==-1?r[ci.progStart]:null),pendingApproval:isPending,notes:ci.notes!==-1?String(r[ci.notes]||''):''}});
+          await apiFetch('/students',{method:'POST',body:{name,nationalId:natId,phone,email:ci.email!==-1?String(r[ci.email]||''):'',employer:ci.employer!==-1?String(r[ci.employer]||''):'',paymentMethod:pm,paymentType:pt,program:progId,programName:progName,hasArrears:hasArr&&!isPending,arrearsAmount:hasArr&&!isPending?(+String(r[ci.arrAmt]||0)||0):0,lastPayment:toDate(ci.lastPay!==-1?r[ci.lastPay]:null),paymentCount:ci.payCnt!==-1?+String(r[ci.payCnt]||0)||0:0,joinDate:toDate(ci.join!==-1?r[ci.join]:null),programStartDate:toDate(ci.progStart!==-1?r[ci.progStart]:null),pendingApproval:isPending,notes:ci.notes!==-1?String(r[ci.notes]||''):''}});
           ok++;
         }catch{fail++;}
       }
@@ -810,8 +815,8 @@ async function exportXlsx(){
     const p=new URLSearchParams({limit:5000,...activeFilters});
     const d=await apiFetch(`/students?${p}`);
     if(!d.students.length){toast('لا بيانات','e');return;}
-    const hdr=['#','الرقم الجامعي','الاسم','رقم الهوية','الجوال','جهة العمل','البرنامج','نوع الدفع','السعر','طريقة الدفع','متأخرات','قيمة المتأخرات','إجمالي المدفوع','آخر سداد','مرات السداد','تاريخ الانضمام','تاريخ بداية البرنامج','الحالة','في انتظار الموافقة','ملف الهوية','ملف الشهادة','موافقة جهة العمل','ملاحظات'];
-    const rows=d.students.map((s,i)=>[i+1,s.studentId||'',s.name,s.nationalId,s.phone,s.employer||'',s.programName||'',s.paymentType||'',s.programPrice||0,s.paymentMethod,s.hasArrears?'نعم':'لا',+s.arrearsAmount||0,+s.totalPaid||0,s.lastPayment?s.lastPayment.slice(0,10):'',s.paymentCount||0,s.joinDate?s.joinDate.slice(0,10):'',s.programStartDate?s.programStartDate.slice(0,10):'',s.isRefunded?'مُسترد':'نشط',s.pendingApproval?'نعم':'لا',s.idCopyFileName||'',s.certFileName||'',s.approvalFileName||'',s.notes||'']);
+    const hdr=['#','الرقم الجامعي','الاسم','رقم الهوية','الجوال','البريد الإلكتروني','جهة العمل','البرنامج','نوع الدفع','السعر','طريقة الدفع','متأخرات','قيمة المتأخرات','إجمالي المدفوع','آخر سداد','مرات السداد','تاريخ الانضمام','تاريخ بداية البرنامج','الحالة','في انتظار الموافقة','ملف الهوية','ملف الشهادة','موافقة جهة العمل','ملاحظات'];
+    const rows=d.students.map((s,i)=>[i+1,s.studentId||'',s.name,s.nationalId,s.phone,s.email||'',s.employer||'',s.programName||'',s.paymentType||'',s.programPrice||0,s.paymentMethod,s.hasArrears?'نعم':'لا',+s.arrearsAmount||0,+s.totalPaid||0,s.lastPayment?s.lastPayment.slice(0,10):'',s.paymentCount||0,s.joinDate?s.joinDate.slice(0,10):'',s.programStartDate?s.programStartDate.slice(0,10):'',s.isRefunded?'مُسترد':s.pendingApproval?'انتظار موافقة':'نشط',s.pendingApproval?'نعم':'لا',s.idCopyFileName||'',s.certFileName||'',s.approvalFileName||'',s.notes||'']);
     const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
     ws['!cols']=hdr.map((_,ci)=>({wch:Math.max(hdr[ci].length,...rows.map(r=>String(r[ci]||'').length))+2}));
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'الطلاب');

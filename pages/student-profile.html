@@ -221,6 +221,7 @@
           <div class="info-item"><div class="info-lbl">الرقم الجامعي</div><div class="info-val" id="iSid">—</div></div>
           <div class="info-item"><div class="info-lbl">رقم الهوية</div><div class="info-val" id="iNat">—</div></div>
           <div class="info-item"><div class="info-lbl">رقم الجوال</div><div class="info-val" id="iPhone">—</div></div>
+          <div class="info-item"><div class="info-lbl">البريد الإلكتروني</div><div class="info-val" id="iEmail">—</div></div>
           <div class="info-item"><div class="info-lbl">جهة العمل</div><div class="info-val" id="iEmp">—</div></div>
           <div class="info-item"><div class="info-lbl">تاريخ الانضمام</div><div class="info-val" id="iJoin">—</div></div>
           <div class="info-item"><div class="info-lbl">البرنامج الدراسي</div><div class="info-val" id="iProg">—</div></div>
@@ -372,10 +373,11 @@ async function loadProfile() {
 
 /* ══ رسم الملف الشخصي ══ */
 function renderProfile(s) {
-  const isRefunded = s.isRefunded;
-  const hasArrears = s.hasArrears && !isRefunded;
-  const daysLate   = s.lastPayment ? Math.floor((Date.now() - new Date(s.lastPayment).getTime()) / 86400000) : null;
-  const isOverdue  = hasArrears && daysLate !== null && daysLate >= 30;
+  const isRefunded  = s.isRefunded;
+  const isPending   = s.pendingApproval;
+  const hasArrears  = s.hasArrears && !isRefunded && !isPending;
+  const daysLate    = s.lastPayment ? Math.floor((Date.now() - new Date(s.lastPayment).getTime()) / 86400000) : null;
+  const isOverdue   = hasArrears && daysLate !== null && daysLate >= 30;
 
   // Hero
   document.getElementById('pName').textContent  = s.name;
@@ -390,10 +392,11 @@ function renderProfile(s) {
   if (s.programName) badges.innerHTML += `<span class="badge badge-blue">📚 ${s.programName}</span>`;
   if (s.paymentType === 'أقساط') badges.innerHTML += `<span class="badge badge-yellow">📆 أقساط</span>`;
   else badges.innerHTML += `<span class="badge badge-gray">💵 كاش</span>`;
-  if (isRefunded)   badges.innerHTML += `<span class="badge badge-yellow">↩️ مُسترد</span>`;
-  else if (isOverdue) badges.innerHTML += `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
-  else if (hasArrears) badges.innerHTML += `<span class="badge badge-red">💰 عليه متأخرات</span>`;
-  else              badges.innerHTML += `<span class="badge badge-green">✅ لا متأخرات</span>`;
+  if (isRefunded)        badges.innerHTML += `<span class="badge badge-gray">↩️ مُسترد</span>`;
+  else if (isPending)    badges.innerHTML += `<span class="badge badge-yellow">⏳ في انتظار الموافقة</span>`;
+  else if (isOverdue)    badges.innerHTML += `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
+  else if (hasArrears)   badges.innerHTML += `<span class="badge badge-red">💰 عليه متأخرات</span>`;
+  else                   badges.innerHTML += `<span class="badge badge-green">✅ لا متأخرات</span>`;
 
   // زر الاسترداد — يظهر فقط إذا كان نشطاً ومدفوع شيء
   if (!isRefunded && (s.totalPaid || 0) > 0 && user.role === 'org_admin') {
@@ -425,6 +428,7 @@ function renderProfile(s) {
   document.getElementById('iSid').innerHTML        = `<span class="sid">${s.studentId || '—'}</span>`;
   document.getElementById('iNat').textContent      = s.nationalId;
   document.getElementById('iPhone').textContent    = s.phone;
+  document.getElementById('iEmail').textContent    = s.email || '—';
   document.getElementById('iEmp').textContent      = s.employer   || '—';
   document.getElementById('iJoin').textContent     = fmt(s.joinDate);
   document.getElementById('iProg').textContent     = s.programName || '—';
@@ -434,10 +438,11 @@ function renderProfile(s) {
   document.getElementById('iLastPay').textContent  = fmt(s.lastPayment);
 
   const statusEl = document.getElementById('iStatus');
-  if (isRefunded)     statusEl.innerHTML = '<span class="badge badge-yellow">↩️ مُسترد (منسحب)</span>';
-  else if (isOverdue) statusEl.innerHTML = `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
-  else if (hasArrears)statusEl.innerHTML = '<span class="badge badge-yellow">💰 عليه متأخرات</span>';
-  else                statusEl.innerHTML = '<span class="badge badge-green">✅ نشط — لا متأخرات</span>';
+  if (isRefunded)      statusEl.innerHTML = '<span class="badge badge-gray">↩️ مُسترد (منسحب)</span>';
+  else if (isPending)  statusEl.innerHTML = '<span class="badge badge-yellow">⏳ في انتظار موافقة جهة العمل</span>';
+  else if (isOverdue)  statusEl.innerHTML = `<span class="badge badge-red">⚠️ متأخر ${daysLate} يوم</span>`;
+  else if (hasArrears) statusEl.innerHTML = '<span class="badge badge-yellow">💰 عليه متأخرات</span>';
+  else                 statusEl.innerHTML = '<span class="badge badge-green">✅ نشط — لا متأخرات</span>';
 
   document.getElementById('iNotes').textContent = s.notes || 'لا توجد ملاحظات';
 
@@ -510,21 +515,11 @@ function renderDocs(s) {
 /* ══ سجل العمليات ══ */
 function renderLog(s) {
   const logs = [];
-  if (s.createdBy) logs.push({
-    icon: '➕',
-    text: `أضاف الطالب: ${s.createdBy.fullName || s.createdBy.username || '—'}`,
-    time: s.createdAt,
-  });
-  if (s.lastEditedBy && s.lastEditedAt) logs.push({
-    icon: '✏️',
-    text: `آخر تعديل بواسطة: ${s.lastEditedBy.fullName || s.lastEditedBy.username || '—'}`,
-    time: s.lastEditedAt,
-  });
-  if (s.isRefunded && s.refundedAt) logs.push({
-    icon: '↩️',
-    text: 'تم تسجيل استرداد المبلغ',
-    time: s.refundedAt,
-  });
+  if (s.createdBy) logs.push({ icon:'➕', text:`أضاف الطالب: ${s.createdBy.fullName || s.createdBy.username || '—'}`, time: s.createdAt });
+  if (s.pendingApproval) logs.push({ icon:'⏳', text:'في انتظار موافقة جهة العمل', time: null });
+  if (s.activatedAt && s.activatedBy) logs.push({ icon:'✅', text:`تم التفعيل بعد الموافقة — بواسطة: ${s.activatedBy?.fullName || '—'}`, time: s.activatedAt });
+  if (s.lastEditedBy && s.lastEditedAt) logs.push({ icon:'✏️', text:`آخر تعديل بواسطة: ${s.lastEditedBy.fullName || s.lastEditedBy.username || '—'}`, time: s.lastEditedAt });
+  if (s.isRefunded && s.refundedAt) logs.push({ icon:'↩️', text:'تم تسجيل استرداد المبلغ', time: s.refundedAt });
 
   document.getElementById('logList').innerHTML = logs.length
     ? logs.map(l => `
@@ -644,9 +639,10 @@ function printReport() {
         <div class="item"><div class="lbl">الاسم الكامل</div><div class="val">${s.name}</div></div>
         <div class="item"><div class="lbl">رقم الهوية</div><div class="val">${s.nationalId}</div></div>
         <div class="item"><div class="lbl">رقم الجوال</div><div class="val">${s.phone}</div></div>
+        <div class="item"><div class="lbl">البريد الإلكتروني</div><div class="val">${s.email||'—'}</div></div>
         <div class="item"><div class="lbl">جهة العمل</div><div class="val">${s.employer||'—'}</div></div>
         <div class="item"><div class="lbl">تاريخ الانضمام</div><div class="val">${fmt(s.joinDate)}</div></div>
-        <div class="item"><div class="lbl">الحالة</div><div class="val">${s.isRefunded?'<span class="badge-y">مُسترد</span>':s.hasArrears?'<span class="badge-y">عليه متأخرات</span>':'<span class="badge-g">نشط</span>'}</div></div>
+        <div class="item"><div class="lbl">الحالة</div><div class="val">${s.isRefunded?'<span class="badge-y">مُسترد</span>':s.pendingApproval?'<span class="badge-y">⏳ انتظار موافقة</span>':s.hasArrears?'<span class="badge-y">متأخرات</span>':'<span class="badge-g">نشط</span>'}</div></div>
       </div>
     </div>
 

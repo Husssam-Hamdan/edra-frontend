@@ -7,54 +7,47 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/shared.css"/>
   <style>
-    /* بطاقات الإحصاء */
-    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-    @media(max-width:900px){ .stats-row { grid-template-columns:repeat(2,1fr); } }
-    @media(max-width:500px){ .stats-row { grid-template-columns:1fr 1fr; } }
-    .stat-box { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; display:flex; align-items:center; gap:14px; }
-    .stat-icon { font-size:2rem; flex-shrink:0; }
-    .stat-info .sn { font-size:1.6rem; font-weight:700; line-height:1; }
-    .stat-info .sl { font-size:.78rem; color:var(--text-muted); margin-top:3px; }
+    .stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:16px}
+    .stat-icon{font-size:2.2rem;flex-shrink:0}
+    .sn{font-size:1.8rem;font-weight:700;line-height:1}
+    .sl{font-size:.78rem;color:var(--text-muted);margin-top:4px}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+    @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 
-    /* بطاقات الجهات مع إحصائياتها */
-    .org-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; transition:border-color .2s; }
-    .org-card:hover { border-color:var(--accent); }
-    .org-card-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-    .org-avatar { width:44px; height:44px; border-radius:10px; background:rgba(47,129,247,.12); border:1px solid rgba(47,129,247,.25); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-    .org-name   { font-size:1rem; font-weight:700; }
-    .org-slug   { font-size:.76rem; color:var(--text-muted); font-family:monospace; }
-    .org-mini-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-    .oms { background:var(--bg3); border-radius:var(--radius-sm); padding:8px 10px; text-align:center; }
-    .oms-n { font-size:1.1rem; font-weight:700; }
-    .oms-l { font-size:.7rem; color:var(--text-muted); margin-top:2px; }
-    .org-actions { display:flex; gap:6px; margin-top:12px; }
+    .org-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;transition:border-color .2s}
+    .org-card:hover{border-color:var(--accent)}
+    .org-hdr{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .org-av{width:44px;height:44px;border-radius:10px;background:rgba(47,129,247,.1);border:1px solid rgba(47,129,247,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .org-nm{font-size:1rem;font-weight:700}
+    .org-sl{font-size:.74rem;color:var(--text-muted);font-family:monospace}
 
-    /* شريط البحث */
-    .search-row { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
-    .search-row input { flex:1; min-width:200px; padding:9px 14px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:var(--font); outline:none; font-size:.9rem; }
-    .search-row input:focus { border-color:var(--accent); }
+    .recent-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .recent-item:last-child{border-bottom:none}
+    .rdot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
+    .rdot.off{background:var(--danger)}
 
-    /* آخر الجهات */
-    .recent-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
-    .recent-item:last-child { border-bottom:none; }
-    .recent-dot { width:8px; height:8px; border-radius:50%; background:var(--success); flex-shrink:0; }
-    .recent-dot.inactive { background:var(--danger); }
+    .srch-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .srch-row input{flex:1;min-width:200px;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);outline:none;font-size:.9rem}
+    .srch-row input:focus{border-color:var(--accent)}
 
-    /* toast */
-    .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); padding:12px 28px; border-radius:var(--radius); font-weight:600; z-index:3000; animation:ta 3.2s forwards; white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.45); }
-    .toast.s { background:var(--success); color:#fff; }
-    .toast.e { background:var(--danger);  color:#fff; }
-    @keyframes ta { 0%{opacity:0;top:35px} 12%{opacity:1;top:20px} 80%{opacity:1} 100%{opacity:0;top:10px} }
+    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:var(--radius);font-weight:600;z-index:3000;animation:ta 3.2s forwards;white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.45)}
+    .toast.s{background:var(--success);color:#fff}.toast.e{background:var(--danger);color:#fff}
+    @keyframes ta{0%{opacity:0;top:35px}12%{opacity:1;top:20px}80%{opacity:1}100%{opacity:0;top:10px}}
+
+    .restore-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3)}
+    .restore-zone:hover{border-color:var(--accent);background:rgba(47,129,247,.04)}
+    .restore-zone.dragover{border-color:var(--success);background:rgba(63,185,80,.06)}
   </style>
 </head>
 <body>
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span style="font-size:.75rem;color:var(--text-muted)">سوبر أدمن</span></div>
+    <div class="sidebar-brand"><h2>🗂️ إدراء</h2><span style="font-size:.74rem;color:var(--text-muted)">سوبر أدمن</span></div>
     <nav class="sidebar-nav">
       <button class="nav-item active" onclick="showTab('overview')"><span class="nav-icon">📊</span>نظرة عامة</button>
       <button class="nav-item" onclick="showTab('orgs')"><span class="nav-icon">🏛️</span>الجهات</button>
       <button class="nav-item" onclick="showTab('users')"><span class="nav-icon">👥</span>المستخدمون</button>
+      <button class="nav-item" onclick="showTab('backup')"><span class="nav-icon">🗄️</span>النسخ الاحتياطي</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-chip" id="userChip"></div>
@@ -67,116 +60,141 @@
     <!-- ══ نظرة عامة ══ -->
     <div id="tabOverview">
       <div class="page-header" style="margin-bottom:20px">
-        <h1>📊 نظرة عامة على النظام</h1>
-        <p id="lastUpdate" style="font-size:.8rem;color:var(--text-muted)"></p>
+        <h1>📊 لوحة إدارة النظام</h1>
+        <p style="color:var(--text-muted);font-size:.82rem" id="lastUpd"></p>
       </div>
 
-      <!-- الإحصائيات الكبيرة -->
-      <div class="stats-row" id="bigStats">
-        <div class="stat-box"><div class="stat-icon">🏛️</div><div class="stat-info"><div class="sn" id="bsOrgs">—</div><div class="sl">جهات نشطة / الإجمالي</div></div></div>
-        <div class="stat-box"><div class="stat-icon">👥</div><div class="stat-info"><div class="sn" id="bsUsers">—</div><div class="sl">مستخدمون نشطون / الإجمالي</div></div></div>
-        <div class="stat-box"><div class="stat-icon">🎓</div><div class="stat-info"><div class="sn" id="bsStudents">—</div><div class="sl">إجمالي الطلاب</div></div></div>
-        <div class="stat-box"><div class="stat-icon">💰</div><div class="stat-info"><div class="sn" id="bsRevenue" style="font-size:1.1rem">—</div><div class="sl">إجمالي الإيرادات (ريال)</div></div></div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-icon">🏛️</div><div><div class="sn" id="bOrgs">—</div><div class="sl">جهات نشطة / الإجمالي</div></div></div>
+        <div class="stat-box"><div class="stat-icon">👥</div><div><div class="sn" id="bUsers">—</div><div class="sl">مستخدمون نشطون / الإجمالي</div></div></div>
+        <div class="stat-box"><div class="stat-icon">✅</div><div><div class="sn" id="bActive" style="color:var(--success)">—</div><div class="sl">جهات مفعّلة</div></div></div>
+        <div class="stat-box"><div class="stat-icon">🔴</div><div><div class="sn" id="bInactive" style="color:var(--danger)">—</div><div class="sl">جهات معطّلة</div></div></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <!-- إحصائيات إضافية -->
-        <div class="card" style="padding:20px">
-          <div class="card-header" style="margin-bottom:16px"><h2 style="font-size:.95rem">📈 ملخص النشاط</h2></div>
-          <div style="display:flex;flex-direction:column;gap:14px" id="activityList">
-            <div style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل...</div>
-          </div>
-        </div>
-
-        <!-- آخر الجهات المضافة -->
         <div class="card" style="padding:20px">
           <div class="card-header" style="margin-bottom:16px"><h2 style="font-size:.95rem">🕒 آخر الجهات المضافة</h2></div>
-          <div id="recentOrgs">
-            <div style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل...</div>
-          </div>
+          <div id="recentOrgs"><p style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل...</p></div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div class="card-header" style="margin-bottom:16px"><h2 style="font-size:.95rem">📋 ملخص النظام</h2></div>
+          <div id="sysSummary"><p style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل...</p></div>
         </div>
       </div>
 
-      <!-- جدول الجهات مع إحصائياتها -->
       <div class="card" style="margin-top:16px;padding:20px">
-        <div class="card-header" style="margin-bottom:16px">
-          <h2 style="font-size:.95rem">🏛️ إحصائيات الجهات</h2>
-        </div>
+        <div class="card-header" style="margin-bottom:16px"><h2 style="font-size:.95rem">🏛️ قائمة الجهات</h2></div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr>
-              <th>الجهة</th><th>الطلاب</th><th>عليهم متأخرات</th><th>الإيرادات (ريال)</th><th>الحالة</th>
-            </tr></thead>
-            <tbody id="orgStatsTbody">
-              <tr><td colspan="5" class="empty-row">جارٍ التحميل...</td></tr>
-            </tbody>
+            <thead><tr><th>اسم الجهة</th><th>المعرف</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="ovOrgsTbody"><tr><td colspan="5" class="empty-row">جارٍ التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ تبويب الجهات ══ -->
+    <!-- ══ الجهات ══ -->
     <div id="tabOrgs" style="display:none">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
-        <div><h1>🏛️ إدارة الجهات</h1><p>الجامعات والمعاهد المسجلة</p></div>
+        <div><h1>🏛️ إدارة الجهات</h1><p>إنشاء وإدارة الجامعات والمعاهد</p></div>
         <button class="btn btn-primary" onclick="openOrgModal()">+ إضافة جهة</button>
       </div>
-
-      <div class="search-row">
-        <input id="orgSearch" placeholder="🔍 ابحث بالاسم أو المعرف..." oninput="filterOrgs()"/>
-        <span style="font-size:.85rem;color:var(--text-muted)" id="orgCount"></span>
+      <div class="srch-row">
+        <input id="orgSrch" placeholder="🔍 ابحث بالاسم أو المعرف..." oninput="renderOrgCards()"/>
+        <span style="font-size:.85rem;color:var(--text-muted)" id="orgCnt"></span>
       </div>
-
-      <div id="orgCards">
-        <div style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</div>
-      </div>
+      <div id="orgCards"><p style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</p></div>
       <div class="pagination" id="orgsPg"></div>
     </div>
 
-    <!-- ══ تبويب المستخدمين ══ -->
+    <!-- ══ المستخدمون ══ -->
     <div id="tabUsers" style="display:none">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
         <div><h1>👥 إدارة المستخدمين</h1><p>مدخلو البيانات وأدمنز الجهات</p></div>
         <button class="btn btn-primary" onclick="openUserModal()">+ إضافة مستخدم</button>
       </div>
-
-      <div class="search-row">
-        <input id="userSearch" placeholder="🔍 ابحث بالاسم أو اسم المستخدم..." oninput="filterUsers()"/>
-        <select id="userOrgFilter" onchange="loadUsers()" style="padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);outline:none">
+      <div class="srch-row">
+        <input id="usrSrch" placeholder="🔍 ابحث..." oninput="renderUsers()"/>
+        <select id="usrOrgF" onchange="loadUsers()" style="padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);outline:none">
           <option value="">كل الجهات</option>
         </select>
-        <select id="userRoleFilter" onchange="loadUsers()" style="padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);outline:none">
+        <select id="usrRoleF" onchange="renderUsers()" style="padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);outline:none">
           <option value="">كل الأدوار</option>
           <option value="org_admin">أدمن جهة</option>
           <option value="data_entry">مدخل بيانات</option>
         </select>
-        <span style="font-size:.85rem;color:var(--text-muted)" id="userCount"></span>
+        <span style="font-size:.85rem;color:var(--text-muted)" id="usrCnt"></span>
       </div>
-
       <div class="card" style="padding:0;overflow:hidden">
         <div class="tbl-wrap">
           <table>
-            <thead><tr>
-              <th>#</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الجهة</th><th>الدور</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th>
-            </tr></thead>
-            <tbody id="usersTbody">
-              <tr><td colspan="8" class="empty-row">جارٍ التحميل...</td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>اسم المستخدم</th><th>الاسم الكامل</th><th>الجهة</th><th>الدور</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="usrTbody"><tr><td colspan="8" class="empty-row">جارٍ التحميل...</td></tr></tbody>
           </table>
         </div>
-        <div class="pagination" id="usersPg"></div>
+        <div class="pagination" id="usrPg"></div>
+      </div>
+    </div>
+
+    <!-- ══ النسخ الاحتياطي ══ -->
+    <div id="tabBackup" style="display:none">
+      <div class="page-header" style="margin-bottom:20px">
+        <h1>🗄️ النسخ الاحتياطي والاسترجاع</h1>
+        <p>النسخ يعمل تلقائياً الساعة 2 ظهراً و 9 مساءً — كل جهة بملف مستقل</p>
+      </div>
+
+      <div class="card" style="padding:20px;margin-bottom:16px">
+        <div class="card-header" style="margin-bottom:16px">
+          <h2 style="font-size:.95rem">⚡ نسخ احتياطي فوري</h2>
+        </div>
+        <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:16px">اضغط لإنشاء نسخة احتياطية الآن لجميع الجهات.</p>
+        <button class="btn btn-primary" id="backupNowBtn" onclick="runBackupNow()">🗄️ نسخ احتياطي الآن</button>
+        <div id="backupResult" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" style="padding:20px">
+        <div class="card-header" style="margin-bottom:16px">
+          <h2 style="font-size:.95rem">↩️ استرجاع نسخة احتياطية لجهة</h2>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>اختر الجهة المراد استرجاع بياناتها</label>
+          <select id="restoreOrgSel" style="max-width:400px">
+            <option value="">— اختر الجهة —</option>
+          </select>
+        </div>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:14px">
+          ارفع ملف النسخة الاحتياطية (JSON) الخاص بالجهة المختارة.
+          يمكن الحصول عليه من مستودع <strong>edra-backup</strong> على GitHub.
+        </p>
+        <div class="restore-zone" id="restoreZone"
+          onclick="document.getElementById('restoreFile').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleDrop(event)">
+          <div style="font-size:2.5rem;margin-bottom:8px">📂</div>
+          <div style="font-weight:600;margin-bottom:4px">اسحب ملف النسخة هنا أو اضغط للاختيار</div>
+          <div style="font-size:.8rem;color:var(--text-muted)">ملفات JSON فقط</div>
+          <div id="restoreFileName" style="margin-top:10px;font-size:.82rem;color:var(--accent)"></div>
+        </div>
+        <input type="file" id="restoreFile" accept=".json" hidden onchange="readRestoreFile(this)"/>
+        <div class="alert alert-error" id="restoreErr" style="display:none;margin-top:12px"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-danger" id="restoreBtn" onclick="doRestore()" disabled>↩️ تأكيد الاسترجاع</button>
+          <button class="btn btn-ghost" onclick="clearRestore()">إلغاء</button>
+        </div>
+        <div id="restoreResult" style="margin-top:14px"></div>
       </div>
     </div>
 
   </main>
 </div>
 
-<!-- Modal إضافة جهة -->
+<!-- Modal الجهة -->
 <div class="modal-overlay" id="orgModal">
   <div class="modal" style="width:min(460px,96vw)">
-    <h3 id="orgModalTitle">إضافة جهة جديدة</h3>
+    <h3 id="omTitle">إضافة جهة جديدة</h3>
     <div class="field" style="margin-top:16px"><label>اسم الجهة <span style="color:var(--danger)">*</span></label><input id="omName" placeholder="جامعة الطائف"/></div>
-    <div class="field"><label>المعرف (slug) — حروف إنجليزية وأرقام وشرطة فقط</label><input id="omSlug" placeholder="taif-university"/></div>
+    <div class="field"><label>المعرف (slug) — حروف إنجليزية وأرقام وشرطة</label><input id="omSlug" placeholder="taif-university"/></div>
     <div class="alert alert-error" id="omErr" style="display:none;margin-top:8px"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeM('orgModal')">إلغاء</button>
@@ -185,7 +203,7 @@
   </div>
 </div>
 
-<!-- Modal إضافة مستخدم -->
+<!-- Modal المستخدم -->
 <div class="modal-overlay" id="userModal">
   <div class="modal" style="width:min(500px,96vw)">
     <h3 id="umTitle">إضافة مستخدم جديد</h3>
@@ -193,35 +211,22 @@
       <div class="field"><label>اسم المستخدم <span style="color:var(--danger)">*</span></label><input id="umUser" placeholder="admin_taif"/></div>
       <div class="field"><label>كلمة المرور <span style="color:var(--danger)">*</span></label><input id="umPass" type="password" placeholder="6 أحرف على الأقل"/></div>
       <div class="field" style="grid-column:1/-1"><label>الاسم الكامل <span style="color:var(--danger)">*</span></label><input id="umFull" placeholder="محمد العمري"/></div>
-      <div class="field"><label>الدور</label>
-        <select id="umRole">
-          <option value="org_admin">أدمن جهة</option>
-          <option value="data_entry">مدخل بيانات</option>
-        </select>
-      </div>
-      <div class="field"><label>الجهة <span style="color:var(--danger)">*</span></label>
-        <select id="umOrg"><option value="">اختر الجهة...</option></select>
-      </div>
+      <div class="field"><label>الدور</label><select id="umRole"><option value="org_admin">أدمن جهة</option><option value="data_entry">مدخل بيانات</option></select></div>
+      <div class="field"><label>الجهة <span style="color:var(--danger)">*</span></label><select id="umOrg"><option value="">اختر...</option></select></div>
     </div>
     <div class="alert alert-error" id="umErr" style="display:none;margin-top:8px"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeM('userModal')">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveUser()">حفظ</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeM('userModal')">إلغاء</button><button class="btn btn-primary" onclick="saveUser()">حفظ</button></div>
   </div>
 </div>
 
-<!-- Modal تغيير كلمة المرور -->
+<!-- Modal كلمة المرور -->
 <div class="modal-overlay" id="pwModal">
-  <div class="modal" style="width:min(400px,96vw)">
+  <div class="modal" style="width:min(380px,96vw)">
     <h3>🔑 تغيير كلمة المرور</h3>
-    <p id="pwUserName" style="color:var(--text-muted);font-size:.85rem;margin:8px 0 16px"></p>
-    <div class="field"><label>كلمة المرور الجديدة</label><input id="pwInput" type="password" placeholder="6 أحرف على الأقل"/></div>
+    <p id="pwName" style="color:var(--text-muted);font-size:.85rem;margin:8px 0 16px"></p>
+    <div class="field"><label>كلمة المرور الجديدة</label><input id="pwInp" type="password" placeholder="6 أحرف على الأقل"/></div>
     <div class="alert alert-error" id="pwErr" style="display:none;margin-top:8px"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeM('pwModal')">إلغاء</button>
-      <button class="btn btn-primary" onclick="savePassword()">تغيير</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeM('pwModal')">إلغاء</button><button class="btn btn-primary" onclick="savePw()">تغيير</button></div>
   </div>
 </div>
 
@@ -230,138 +235,108 @@
 const user = requireAuth(['superadmin']);
 if (user) document.getElementById('userChip').textContent = `👤 ${user.fullName}`;
 
-let allOrgs=[], allUsers=[], editOrgId=null, editUserId=null, pwUserId=null;
+let allOrgs=[], allUsers=[], editOrgId=null, pwUserId=null;
 let orgsPage=1, usersPage=1;
-
-const roleLabels = { superadmin:'سوبر أدمن', org_admin:'أدمن جهة', data_entry:'مدخل بيانات' };
+let restoreData=null, restoreOrgId=null;
+const roleLabels={superadmin:'سوبر أدمن',org_admin:'أدمن جهة',data_entry:'مدخل بيانات'};
 
 /* ══ تبويبات ══ */
 function showTab(name){
-  ['overview','orgs','users'].forEach(t=>{
-    document.getElementById(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`).style.display=t===name?'':'none';
+  ['Overview','Orgs','Users','Backup'].forEach(t=>{
+    document.getElementById(`tab${t}`).style.display=t.toLowerCase()===name?'':'none';
   });
-  document.querySelectorAll('.nav-item').forEach((b,i)=>{
-    b.classList.toggle('active',['overview','orgs','users'].indexOf(name)===i);
-  });
+  document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',['overview','orgs','users','backup'][i]===name));
   if(name==='overview') loadOverview();
   if(name==='orgs')     loadOrgs();
   if(name==='users')    loadUsers();
+  if(name==='backup')   initBackupOrgs();
 }
 
 /* ══ نظرة عامة ══ */
 async function loadOverview(){
   try{
-    const d = await apiFetch('/admin/stats');
-
-    // البطاقات الكبيرة
-    document.getElementById('bsOrgs').textContent     = `${d.activeOrgs}/${d.totalOrgs}`;
-    document.getElementById('bsUsers').textContent    = `${d.activeUsers}/${d.totalUsers}`;
-    document.getElementById('bsStudents').textContent = d.totalStudents.toLocaleString('ar-SA');
-    document.getElementById('bsRevenue').textContent  = d.totalRevenue.toLocaleString('ar-SA') + ' ﷼';
-    document.getElementById('lastUpdate').textContent = `آخر تحديث: ${new Date().toLocaleTimeString('ar-SA')}`;
-
-    // ملخص النشاط
-    document.getElementById('activityList').innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">🏛️ إجمالي الجهات</span>
-        <strong>${d.totalOrgs}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">✅ الجهات النشطة</span>
-        <strong style="color:var(--success)">${d.activeOrgs}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">👥 إجمالي المستخدمين</span>
-        <strong>${d.totalUsers}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">🎓 إجمالي الطلاب</span>
-        <strong>${d.totalStudents.toLocaleString('ar-SA')}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">💳 إجمالي الدفعات</span>
-        <strong>${d.totalPayments.toLocaleString('ar-SA')}</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);border-radius:var(--radius-sm)">
-        <span style="font-size:.88rem">💰 إجمالي الإيرادات</span>
-        <strong style="color:var(--success)">${d.totalRevenue.toLocaleString('ar-SA')} ريال</strong>
-      </div>`;
+    const d=await apiFetch('/admin/stats');
+    document.getElementById('bOrgs').textContent    = `${d.activeOrgs}/${d.totalOrgs}`;
+    document.getElementById('bUsers').textContent   = `${d.activeUsers}/${d.totalUsers}`;
+    document.getElementById('bActive').textContent  = d.activeOrgs;
+    document.getElementById('bInactive').textContent= d.totalOrgs - d.activeOrgs;
+    document.getElementById('lastUpd').textContent  = `آخر تحديث: ${new Date().toLocaleTimeString('ar-SA')}`;
 
     // آخر الجهات
     document.getElementById('recentOrgs').innerHTML = d.recentOrgs.length
       ? d.recentOrgs.map(o=>`
           <div class="recent-item">
-            <div class="recent-dot ${o.isActive?'':'inactive'}"></div>
-            <div style="flex:1">
-              <div style="font-size:.88rem;font-weight:600">${o.name}</div>
-              <div style="font-size:.74rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('ar-SA')}</div>
-            </div>
+            <div class="rdot ${o.isActive?'':'off'}"></div>
+            <div style="flex:1"><div style="font-size:.88rem;font-weight:600">${o.name}</div><div style="font-size:.74rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('ar-SA')}</div></div>
             <span class="badge ${o.isActive?'badge-green':'badge-red'}">${o.isActive?'نشطة':'معطّلة'}</span>
           </div>`).join('')
-      : '<div style="color:var(--text-muted);text-align:center;padding:20px">لا توجد جهات</div>';
+      : '<p style="color:var(--text-muted);text-align:center;padding:20px">لا توجد جهات</p>';
 
-    // جدول إحصائيات الجهات
-    const tbody = document.getElementById('orgStatsTbody');
-    tbody.innerHTML = d.orgsWithStats.length
-      ? d.orgsWithStats.map(o=>`<tr>
+    // ملخص النظام
+    document.getElementById('sysSummary').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)"><span style="font-size:.88rem">🏛️ إجمالي الجهات</span><strong>${d.totalOrgs}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)"><span style="font-size:.88rem">✅ الجهات النشطة</span><strong style="color:var(--success)">${d.activeOrgs}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)"><span style="font-size:.88rem">👥 إجمالي المستخدمين</span><strong>${d.totalUsers}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);border-radius:var(--radius-sm)"><span style="font-size:.88rem">👤 المستخدمون النشطون</span><strong style="color:var(--success)">${d.activeUsers}</strong></div>
+      </div>`;
+
+    // جدول الجهات بدون أرقام داخلية
+    const tb=document.getElementById('ovOrgsTbody');
+    tb.innerHTML=d.recentOrgs.length
+      ? d.recentOrgs.map(o=>`<tr>
           <td style="text-align:right;font-weight:600">${o.name}</td>
-          <td><strong>${(o.studentCount||0).toLocaleString('ar-SA')}</strong></td>
-          <td><span class="${o.withArrears>0?'badge badge-yellow':'badge badge-gray'}">${(o.withArrears||0).toLocaleString('ar-SA')}</span></td>
-          <td><strong style="color:var(--success)">${(o.totalRevenue||0).toLocaleString('ar-SA')} ﷼</strong></td>
+          <td style="font-family:monospace;font-size:.82rem">${o.slug}</td>
+          <td style="font-size:.8rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('ar-SA')}</td>
           <td><span class="badge ${o.isActive?'badge-green':'badge-red'}">${o.isActive?'نشطة':'معطّلة'}</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="showTab('orgs')">إدارة</button></td>
         </tr>`).join('')
       : '<tr><td colspan="5" class="empty-row">لا توجد جهات</td></tr>';
-
-  }catch(e){ console.error(e); }
+  }catch(e){console.error(e);}
 }
 
 /* ══ الجهات ══ */
 async function loadOrgs(){
-  const el = document.getElementById('orgCards');
-  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</div>';
+  document.getElementById('orgCards').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px">جارٍ التحميل...</p>';
   try{
-    const d = await apiFetch(`/admin/orgs?page=${orgsPage}&limit=10`);
-    allOrgs = d.orgs;
-    document.getElementById('orgCount').textContent = `${d.total} جهة`;
-    renderOrgCards(d.orgs);
-    pgRender('orgsPg', d.page, d.pages, p=>{ orgsPage=p; loadOrgs(); });
-  }catch(e){ el.innerHTML=`<div style="color:var(--danger);text-align:center;padding:40px">${e.message}</div>`; }
+    const d=await apiFetch(`/admin/orgs?page=${orgsPage}&limit=10`);
+    allOrgs=d.orgs;
+    document.getElementById('orgCnt').textContent=`${d.total} جهة`;
+    renderOrgCards();
+    pgR('orgsPg',d.page,d.pages,p=>{orgsPage=p;loadOrgs();});
+  }catch(e){document.getElementById('orgCards').innerHTML=`<p style="color:var(--danger);text-align:center;padding:40px">${e.message}</p>`;}
 }
 
-function renderOrgCards(orgs){
-  const el = document.getElementById('orgCards');
-  if(!orgs.length){ el.innerHTML='<div style="color:var(--text-muted);text-align:center;padding:40px">لا توجد جهات</div>'; return; }
-  el.innerHTML = orgs.map(o=>`
+function renderOrgCards(){
+  const q=document.getElementById('orgSrch').value.toLowerCase();
+  const list=allOrgs.filter(o=>!q||o.name.toLowerCase().includes(q)||o.slug.includes(q));
+  const el=document.getElementById('orgCards');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px">لا توجد نتائج</p>';return;}
+  el.innerHTML=list.map(o=>`
     <div class="org-card">
-      <div class="org-card-header">
-        <div class="org-avatar">🏛️</div>
+      <div class="org-hdr">
+        <div class="org-av">🏛️</div>
         <div style="flex:1">
-          <div class="org-name">${o.name}</div>
-          <div class="org-slug">${o.slug}</div>
+          <div class="org-nm">${o.name}</div>
+          <div class="org-sl">${o.slug}</div>
         </div>
         <span class="badge ${o.isActive?'badge-green':'badge-red'}">${o.isActive?'نشطة':'معطّلة'}</span>
-        <div style="font-size:.76rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('ar-SA')}</div>
+        <span style="font-size:.74rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('ar-SA')}</span>
       </div>
-      <div class="org-actions">
+      <div class="btn-row" style="gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="editOrg('${o._id}','${o.name.replace(/'/g,"\\'")}','${o.slug}')">✏️ تعديل</button>
         <button class="btn btn-sm ${o.isActive?'btn-danger':'btn-success'}" onclick="toggleOrg('${o._id}')">
           ${o.isActive?'🔴 تعطيل':'🟢 تفعيل'}
         </button>
-        <button class="btn btn-ghost btn-sm" onclick="showTab('users');document.getElementById('userOrgFilter').value='${o._id}';loadUsers()">
-          👥 مستخدموها
+        <button class="btn btn-ghost btn-sm" onclick="showTab('users');document.getElementById('usrOrgF').value='${o._id}';loadUsers()">
+          👥 المستخدمون
         </button>
       </div>
     </div>`).join('');
 }
 
-function filterOrgs(){
-  const q = document.getElementById('orgSearch').value.toLowerCase();
-  const filtered = allOrgs.filter(o=>o.name.toLowerCase().includes(q)||o.slug.includes(q));
-  renderOrgCards(filtered);
-}
-
-function openOrgModal(){ editOrgId=null; document.getElementById('orgModalTitle').textContent='إضافة جهة جديدة'; document.getElementById('omName').value=''; document.getElementById('omSlug').value=''; document.getElementById('omErr').style.display='none'; document.getElementById('orgModal').classList.add('open'); }
-function editOrg(id,name,slug){ editOrgId=id; document.getElementById('orgModalTitle').textContent='تعديل الجهة'; document.getElementById('omName').value=name; document.getElementById('omSlug').value=slug; document.getElementById('omErr').style.display='none'; document.getElementById('orgModal').classList.add('open'); }
+function openOrgModal(){editOrgId=null;document.getElementById('omTitle').textContent='إضافة جهة جديدة';document.getElementById('omName').value='';document.getElementById('omSlug').value='';document.getElementById('omErr').style.display='none';document.getElementById('orgModal').classList.add('open');}
+function editOrg(id,name,slug){editOrgId=id;document.getElementById('omTitle').textContent='تعديل الجهة';document.getElementById('omName').value=name;document.getElementById('omSlug').value=slug;document.getElementById('omErr').style.display='none';document.getElementById('orgModal').classList.add('open');}
 
 async function saveOrg(){
   const name=document.getElementById('omName').value.trim();
@@ -383,29 +358,27 @@ async function toggleOrg(id){
 
 /* ══ المستخدمون ══ */
 async function loadUsers(){
-  const tbody=document.getElementById('usersTbody');
-  tbody.innerHTML='<tr><td colspan="8" class="empty-row">جارٍ التحميل...</td></tr>';
+  const org=document.getElementById('usrOrgF').value;
+  const p=new URLSearchParams({page:usersPage,limit:20,...(org?{org}:{})});
   try{
-    const org=document.getElementById('userOrgFilter').value;
-    const params=new URLSearchParams({page:usersPage,limit:20,...(org?{org}:{})});
-    const d=await apiFetch(`/admin/users?${params}`);
+    const d=await apiFetch(`/admin/users?${p}`);
     allUsers=d.users;
-    document.getElementById('userCount').textContent=`${d.total} مستخدم`;
-    renderUsers(d.users,d.page);
-    pgRender('usersPg',d.page,d.pages,p=>{usersPage=p;loadUsers();});
-  }catch(e){tbody.innerHTML=`<tr><td colspan="8" class="empty-row" style="color:var(--danger)">${e.message}</td></tr>`;}
+    document.getElementById('usrCnt').textContent=`${d.total} مستخدم`;
+    renderUsers();
+    pgR('usrPg',d.page,d.pages,p=>{usersPage=p;loadUsers();});
+  }catch(e){document.getElementById('usrTbody').innerHTML=`<tr><td colspan="8" class="empty-row" style="color:var(--danger)">${e.message}</td></tr>`;}
 }
 
-function renderUsers(list,page){
-  const tbody=document.getElementById('usersTbody');
-  const q=document.getElementById('userSearch').value.toLowerCase();
-  const role=document.getElementById('userRoleFilter').value;
-  let filtered=list;
-  if(q) filtered=filtered.filter(u=>u.fullName.toLowerCase().includes(q)||u.username.toLowerCase().includes(q));
-  if(role) filtered=filtered.filter(u=>u.role===role);
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="empty-row">لا توجد نتائج</td></tr>';return;}
-  tbody.innerHTML=filtered.map((u,i)=>`<tr>
-    <td>${(page-1)*20+i+1}</td>
+function renderUsers(){
+  const q=document.getElementById('usrSrch').value.toLowerCase();
+  const role=document.getElementById('usrRoleF').value;
+  let list=allUsers;
+  if(q) list=list.filter(u=>u.fullName.toLowerCase().includes(q)||u.username.toLowerCase().includes(q));
+  if(role) list=list.filter(u=>u.role===role);
+  const tb=document.getElementById('usrTbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-row">لا توجد نتائج</td></tr>';return;}
+  tb.innerHTML=list.map((u,i)=>`<tr>
+    <td>${i+1}</td>
     <td style="font-family:monospace;font-size:.85rem">${u.username}</td>
     <td style="text-align:right;font-weight:500">${u.fullName}</td>
     <td>${u.org?.name||'—'}</td>
@@ -423,25 +396,19 @@ function renderUsers(list,page){
   </tr>`).join('');
 }
 
-function filterUsers(){ renderUsers(allUsers, usersPage); }
-
 async function openUserModal(){
-  editUserId=null;
   document.getElementById('umTitle').textContent='إضافة مستخدم جديد';
-  document.getElementById('umUser').value='';
-  document.getElementById('umPass').value='';
-  document.getElementById('umFull').value='';
+  ['umUser','umPass','umFull'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('umErr').style.display='none';
-  // تحميل الجهات
   try{
     const d=await apiFetch('/admin/orgs?limit=100');
     const sel=document.getElementById('umOrg');
-    const filterSel=document.getElementById('userOrgFilter');
-    sel.innerHTML='<option value="">اختر الجهة...</option>';
-    filterSel.innerHTML='<option value="">كل الجهات</option>';
+    const fSel=document.getElementById('usrOrgF');
+    sel.innerHTML='<option value="">اختر...</option>';
+    fSel.innerHTML='<option value="">كل الجهات</option>';
     d.orgs.forEach(o=>{
-      sel.innerHTML+=`<option value="${o._id}">${o.name}</option>`;
-      filterSel.innerHTML+=`<option value="${o._id}">${o.name}</option>`;
+      sel.innerHTML +=`<option value="${o._id}">${o.name}</option>`;
+      fSel.innerHTML+=`<option value="${o._id}">${o.name}</option>`;
     });
   }catch{}
   document.getElementById('userModal').classList.add('open');
@@ -449,47 +416,117 @@ async function openUserModal(){
 
 async function saveUser(){
   const err=document.getElementById('umErr');err.style.display='none';
-  const body={
-    username:document.getElementById('umUser').value.trim(),
-    password:document.getElementById('umPass').value,
-    fullName:document.getElementById('umFull').value.trim(),
-    role:    document.getElementById('umRole').value,
-    orgId:   document.getElementById('umOrg').value,
-  };
+  const body={username:document.getElementById('umUser').value.trim(),password:document.getElementById('umPass').value,fullName:document.getElementById('umFull').value.trim(),role:document.getElementById('umRole').value,orgId:document.getElementById('umOrg').value};
   if(!body.username||!body.password||!body.fullName){err.textContent='جميع الحقول مطلوبة.';err.style.display='block';return;}
-  try{
-    await apiFetch('/admin/users',{method:'POST',body});
-    closeM('userModal');toast('تم إضافة المستخدم ✓');loadUsers();
-  }catch(e){err.textContent=e.message;err.style.display='block';}
+  try{await apiFetch('/admin/users',{method:'POST',body});closeM('userModal');toast('تم ✓');loadUsers();}
+  catch(e){err.textContent=e.message;err.style.display='block';}
 }
 
 async function toggleUser(id){
-  if(!confirm('تأكيد تغيير حالة المستخدم؟'))return;
+  if(!confirm('تأكيد؟'))return;
   try{await apiFetch(`/admin/users/${id}/toggle`,{method:'PATCH'});loadUsers();}
   catch(e){toast(e.message,'e');}
 }
 
-function openPwModal(id,name){
-  pwUserId=id;
-  document.getElementById('pwUserName').textContent=`المستخدم: ${name}`;
-  document.getElementById('pwInput').value='';
-  document.getElementById('pwErr').style.display='none';
-  document.getElementById('pwModal').classList.add('open');
-}
-
-async function savePassword(){
-  const pw=document.getElementById('pwInput').value;
+function openPwModal(id,name){pwUserId=id;document.getElementById('pwName').textContent=`المستخدم: ${name}`;document.getElementById('pwInp').value='';document.getElementById('pwErr').style.display='none';document.getElementById('pwModal').classList.add('open');}
+async function savePw(){
+  const pw=document.getElementById('pwInp').value;
   const err=document.getElementById('pwErr');err.style.display='none';
   if(!pw||pw.length<6){err.textContent='كلمة المرور 6 أحرف على الأقل.';err.style.display='block';return;}
-  try{
-    await apiFetch(`/admin/users/${pwUserId}/password`,{method:'PATCH',body:{password:pw}});
-    closeM('pwModal');toast('تم تغيير كلمة المرور ✓');
-  }catch(e){err.textContent=e.message;err.style.display='block';}
+  try{await apiFetch(`/admin/users/${pwUserId}/password`,{method:'PATCH',body:{password:pw}});closeM('pwModal');toast('تم تغيير كلمة المرور ✓');}
+  catch(e){err.textContent=e.message;err.style.display='block';}
 }
 
-/* ══ Pagination ══ */
-function pgRender(containerId,page,pages,cb){
-  const el=document.getElementById(containerId);
+/* ══ النسخ الاحتياطي ══ */
+async function initBackupOrgs(){
+  try{
+    const d=await apiFetch('/admin/orgs?limit=100');
+    const sel=document.getElementById('restoreOrgSel');
+    sel.innerHTML='<option value="">— اختر الجهة —</option>';
+    d.orgs.forEach(o=>sel.innerHTML+=`<option value="${o._id}">${o.name}</option>`);
+  }catch{}
+}
+
+async function runBackupNow(){
+  const btn=document.getElementById('backupNowBtn');
+  const res=document.getElementById('backupResult');
+  btn.disabled=true;btn.textContent='⏳ جارٍ النسخ...';
+  res.innerHTML='';
+  try{
+    const cron=prompt('أدخل كلمة CRON_SECRET للتأكيد:');
+    if(!cron){btn.disabled=false;btn.textContent='🗄️ نسخ احتياطي الآن';return;}
+    const d=await apiFetch(`/backup?token=${encodeURIComponent(cron)}`);
+    res.innerHTML=`<div class="alert alert-success" style="margin-top:8px">
+      ✅ ${d.message}<br>
+      <small style="color:var(--text-muted)">${d.results?.map(r=>`${r.org}: ${r.status==='success'?`✓ (${r.students} طالب)`:'❌ '+r.error}`).join(' | ')||''}</small>
+    </div>`;
+  }catch(e){res.innerHTML=`<div class="alert alert-error" style="margin-top:8px">❌ ${e.message}</div>`;}
+  btn.disabled=false;btn.textContent='🗄️ نسخ احتياطي الآن';
+}
+
+/* استرجاع */
+function handleDrop(ev){
+  ev.preventDefault();
+  document.getElementById('restoreZone').classList.remove('dragover');
+  const file=ev.dataTransfer.files[0];
+  if(file) readFile(file);
+}
+
+function readRestoreFile(input){
+  const file=input.files[0];
+  if(file) readFile(file);
+}
+
+function readFile(file){
+  if(!file.name.endsWith('.json')){
+    document.getElementById('restoreErr').textContent='يجب أن يكون الملف بصيغة JSON.';
+    document.getElementById('restoreErr').style.display='block';return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      restoreData=JSON.parse(e.target.result);
+      document.getElementById('restoreFileName').textContent=`✅ ${file.name} — ${restoreData.students?.length||0} طالب | ${restoreData.payments?.length||0} دفعة`;
+      document.getElementById('restoreBtn').disabled=false;
+      document.getElementById('restoreErr').style.display='none';
+    }catch{
+      document.getElementById('restoreErr').textContent='الملف تالف أو ليس JSON صحيح.';
+      document.getElementById('restoreErr').style.display='block';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function doRestore(){
+  const orgId=document.getElementById('restoreOrgSel').value;
+  const err=document.getElementById('restoreErr');
+  const res=document.getElementById('restoreResult');
+  err.style.display='none';res.innerHTML='';
+  if(!orgId){err.textContent='اختر الجهة أولاً.';err.style.display='block';return;}
+  if(!restoreData){err.textContent='لم يتم تحميل ملف النسخة.';err.style.display='block';return;}
+  if(!confirm('تأكيد استرجاع البيانات؟ ستُضاف البيانات المفقودة بدون حذف الموجودة.'))return;
+  const btn=document.getElementById('restoreBtn');
+  btn.disabled=true;btn.textContent='⏳ جارٍ الاسترجاع...';
+  try{
+    const d=await apiFetch(`/admin/restore/${orgId}`,{method:'POST',body:{backupData:restoreData}});
+    res.innerHTML=`<div class="alert alert-success">✅ ${d.message}</div>`;
+    toast('تم الاسترجاع بنجاح ✓');
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+  btn.disabled=false;btn.textContent='↩️ تأكيد الاسترجاع';
+}
+
+function clearRestore(){
+  restoreData=null;
+  document.getElementById('restoreFileName').textContent='';
+  document.getElementById('restoreFile').value='';
+  document.getElementById('restoreBtn').disabled=true;
+  document.getElementById('restoreErr').style.display='none';
+  document.getElementById('restoreResult').innerHTML='';
+}
+
+/* ══ مساعدات ══ */
+function pgR(id,page,pages,cb){
+  const el=document.getElementById(id);
   if(!el||pages<=1){if(el)el.innerHTML='';return;}
   let h=`<span class="pg-info">الصفحة ${page} من ${pages}</span>`;
   h+=`<button class="pg-btn"${page<=1?' disabled':''} onclick="(${cb})(1)">«</button>`;
@@ -500,23 +537,10 @@ function pgRender(containerId,page,pages,cb){
   h+=`<button class="pg-btn"${page>=pages?' disabled':''} onclick="(${cb})(${pages})">»</button>`;
   el.innerHTML=h;
 }
-
-/* ══ مساعدات ══ */
 function closeM(id){document.getElementById(id).classList.remove('open');}
 function toast(msg,type='s'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3200);}
 
-// تحميل الجهات في فلتر المستخدمين عند البداية
-async function initUserOrgFilter(){
-  try{
-    const d=await apiFetch('/admin/orgs?limit=100');
-    const sel=document.getElementById('userOrgFilter');
-    d.orgs.forEach(o=>sel.innerHTML+=`<option value="${o._id}">${o.name}</option>`);
-  }catch{}
-}
-
-// تحميل أولي
 loadOverview();
-initUserOrgFilter();
 </script>
 </body>
 </html>

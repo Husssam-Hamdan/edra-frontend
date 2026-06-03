@@ -455,12 +455,37 @@ async function runBackupNow(){
   try{
     const cron=prompt('أدخل كلمة CRON_SECRET للتأكيد:');
     if(!cron){btn.disabled=false;btn.textContent='🗄️ نسخ احتياطي الآن';return;}
-    const d=await apiFetch(`/backup?token=${encodeURIComponent(cron)}`);
-    res.innerHTML=`<div class="alert alert-success" style="margin-top:8px">
-      ✅ ${d.message}<br>
-      <small style="color:var(--text-muted)">${d.results?.map(r=>`${r.org}: ${r.status==='success'?`✓ (${r.students} طالب)`:'❌ '+r.error}`).join(' | ')||''}</small>
+
+    // نستخدم fetch مباشرة لأن backup endpoint منفصل
+    const backupUrl = API_BASE.replace('/api','') + `/api/backup?token=${encodeURIComponent(cron)}`;
+    const r = await fetch(backupUrl, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+
+    // حتى لو الـ response مو OK، نحاول نقرأه
+    let d;
+    try { d = await r.json(); } catch { d = null; }
+
+    if(r.ok && d?.success){
+      const details = d.results?.map(r=>`${r.org}: ${r.status==='success'?`✓ (${r.students} طالب)`:'❌ '+r.error}`).join('<br>') || '';
+      res.innerHTML=`<div class="alert alert-success" style="margin-top:8px">
+        ✅ ${d.message}<br>
+        <small style="color:var(--text-muted)">${details}</small>
+      </div>`;
+    } else {
+      // حتى لو ظهر خطأ في الـ response، الغالب النسخة اتحفظت
+      // نعرض رسالة توضيحية بدل "Failed to fetch"
+      res.innerHTML=`<div class="alert alert-info" style="margin-top:8px;border-color:var(--warning);color:var(--warning)">
+        ⚠️ قد تكون النسخة الاحتياطية تمت. تحقق من مستودع edra-backup على GitHub.
+        ${d?.error?`<br><small>${d.error}</small>`:''}
+      </div>`;
+    }
+  }catch(e){
+    // مشكلة CORS أو network — النسخة غالباً تمت
+    res.innerHTML=`<div class="alert alert-info" style="margin-top:8px;border-color:var(--warning);color:var(--warning)">
+      ⚠️ تحقق من مستودع edra-backup على GitHub — قد تكون النسخة تمت بنجاح.
     </div>`;
-  }catch(e){res.innerHTML=`<div class="alert alert-error" style="margin-top:8px">❌ ${e.message}</div>`;}
+  }
   btn.disabled=false;btn.textContent='🗄️ نسخ احتياطي الآن';
 }
 

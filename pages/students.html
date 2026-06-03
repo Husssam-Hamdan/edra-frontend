@@ -76,6 +76,7 @@
     <nav class="sidebar-nav">
       <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>لوحة التحكم</a>
       <button class="nav-item active"><span class="nav-icon">🎓</span>الطلاب</button>
+      <a class="nav-item" href="dashboard.html?tab=programs"><span class="nav-icon">📚</span>البرامج الدراسية</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-chip" id="userChip"></div>
@@ -128,7 +129,6 @@
                 <select id="fPayType" onchange="onProgChange()"><option value="كاش">💵 كاش</option><option value="أقساط">📆 أقساط</option></select>
               </div>
               <div class="field"><label>السعر (ريال)</label><input id="fPrice" type="number" min="0" placeholder="0" readonly style="background:var(--bg)"/></div>
-              <div class="field"><label>تاريخ الانضمام</label><input id="fJoin" type="date"/></div>
               <div class="field"><label>تاريخ بداية البرنامج</label><input id="fProgStart" type="date"/></div>
             </div>
           </div>
@@ -328,6 +328,72 @@
   </div>
 </div>
 
+<!-- ══ Modal التعديل ══ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="width:min(720px,96vw);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:var(--bg2);padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <h3 id="editModalTitle">✏️ تعديل بيانات الطالب</h3>
+      <button onclick="closeM('editModal')" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <form id="editForm" autocomplete="off">
+      <!-- البيانات الشخصية -->
+      <div style="margin-bottom:16px">
+        <div class="fsec-title">👤 البيانات الشخصية</div>
+        <div class="fgrid">
+          <div class="field g2"><label>الاسم الرباعي <span style="color:var(--danger)">*</span></label><input id="efName" required/></div>
+          <div class="field"><label>رقم الهوية</label><input id="efNat" readonly style="background:var(--bg);color:var(--text-muted)"/></div>
+          <div class="field"><label>رقم الجوال <span style="color:var(--danger)">*</span></label><input id="efPhone" maxlength="12" inputmode="tel" required/></div>
+          <div class="field"><label>البريد الإلكتروني</label><input id="efEmail" type="email"/></div>
+          <div class="field"><label>جهة العمل</label><input id="efEmp"/></div>
+          <div class="field"><label>تاريخ الانضمام</label><input id="efJoin" type="date"/></div>
+        </div>
+      </div>
+      <!-- البرنامج -->
+      <div style="margin-bottom:16px">
+        <div class="fsec-title">📚 البرنامج الدراسي</div>
+        <div class="fgrid">
+          <div class="field"><label>نوع الدفع</label>
+            <select id="efPayType"><option value="كاش">💵 كاش</option><option value="أقساط">📆 أقساط</option></select>
+          </div>
+          <div class="field"><label>السعر (ريال)</label><input id="efPrice" type="number" min="0"/></div>
+          <div class="field"><label>تاريخ بداية البرنامج</label><input id="efProgStart" type="date"/></div>
+        </div>
+      </div>
+      <!-- السداد -->
+      <div style="margin-bottom:16px">
+        <div class="fsec-title">💰 بيانات السداد</div>
+        <div class="fgrid">
+          <div class="field"><label>طريقة الدفع</label>
+            <select id="efPayMeth"><option value="شبكة">💳 شبكة</option><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option></select>
+          </div>
+          <div class="field"><label>تاريخ آخر سداد</label><input id="efLastPay" type="date"/></div>
+          <div class="field"><label>عدد مرات السداد</label><input id="efPayCnt" type="number" min="0"/></div>
+          <div class="field g3" style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center">
+            <label class="checkbox-lbl"><input type="checkbox" id="efHasArr" onchange="toggleEfArr()"/><span>عليه متأخرات</span></label>
+            <input id="efArrAmt" placeholder="قيمة المتأخرات (ريال)" disabled inputmode="numeric"/>
+          </div>
+          <div class="field g3">
+            <label class="checkbox-lbl">
+              <input type="checkbox" id="efPending"/>
+              <span>⏳ في انتظار موافقة جهة العمل</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- ملاحظات -->
+      <div style="margin-bottom:16px">
+        <div class="fsec-title">📝 ملاحظات</div>
+        <div class="field"><textarea id="efNotes" rows="2"></textarea></div>
+      </div>
+      <div class="alert alert-error" id="editErr" style="display:none;margin-bottom:12px"></div>
+      <div class="modal-footer" style="position:sticky;bottom:0;background:var(--bg2);padding-top:12px;border-top:1px solid var(--border)">
+        <button type="button" class="btn btn-ghost" onclick="closeM('editModal')">إلغاء</button>
+        <button type="submit" class="btn btn-primary" id="editSaveBtn">💾 حفظ التعديل</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ══ Modal سجل الدفعات ══ -->
 <div class="modal-overlay" id="histModal">
   <div class="modal" style="width:min(600px,96vw)">
@@ -452,11 +518,11 @@ function doSearch(){
   if(!q){toast('أدخل نصاً للبحث','e');return;}
   activeFilters={q};pg=1;renderFilterTags();load();
 }
-function showAll(){document.getElementById('srch').value='';activeFilters={};pg=1;renderFilterTags();load();}
+function showAll(){document.getElementById('srch').value='';activeFilters={};lastQ={};pg=1;renderFilterTags();load();}
 
 function applyFilter(extra){
   document.getElementById('srch').value='';
-  activeFilters=extra;pg=1;renderFilterTags();load();
+  activeFilters=extra;lastQ=extra;pg=1;renderFilterTags();load();
 }
 
 function toggleAdv(){
@@ -504,7 +570,7 @@ function renderFilterTags(){
 function removeFilter(key){delete activeFilters[key];pg=1;renderFilterTags();load();}
 
 async function load(){
-  if(lastQ===null&&!Object.keys(activeFilters).length)return;
+  if(lastQ===null&&Object.keys(activeFilters).length===0&&Object.keys(lastQ||{}).length===0)return;
   lastQ=activeFilters;
   try{
     const p=new URLSearchParams({page:pg,limit:20,...activeFilters});
@@ -657,30 +723,86 @@ function skipPay(){closeM('afterAddModal');toast('تم إضافة الطالب �
 /* ══ تعديل ══ */
 async function editS(id){
   try{
+    // جلب بيانات الطالب
     const p=new URLSearchParams({page:pg,limit:20,...activeFilters});
     const d=await apiFetch(`/students?${p}`);
-    const s=d.students.find(x=>x._id===id);if(!s)return;
-    document.getElementById('fName').value       =s.name;
-    document.getElementById('fNat').value        =s.nationalId;
-    document.getElementById('fPhone').value      =s.phone;
-    document.getElementById('fEmail').value      =s.email||'';
-    document.getElementById('fEmp').value        =s.employer||'';
-    document.getElementById('fJoin').value       =s.joinDate?s.joinDate.slice(0,10):'';
-    document.getElementById('fProgStart').value  =s.programStartDate?s.programStartDate.slice(0,10):'';
-    document.getElementById('fProg').value       =s.program?._id||s.program||'';
-    document.getElementById('fPayType').value    =s.paymentType||'كاش';
-    document.getElementById('fPrice').value      =s.programPrice||0;
-    document.getElementById('fPending').checked  =!!s.pendingApproval;
-    document.getElementById('fNotes').value      =s.notes||'';
-    if(s.idCopyFileName){document.getElementById('nm_id').textContent=s.idCopyFileName;document.getElementById('box_id').classList.add('done');}
-    if(s.certFileName)  {document.getElementById('nm_cert').textContent=s.certFileName;document.getElementById('box_cert').classList.add('done');}
-    if(s.approvalFileName){document.getElementById('nm_appr').textContent=s.approvalFileName;document.getElementById('box_appr').classList.add('done');}
+    let s=d.students.find(x=>x._id===id);
+    // إذا ما وجد في الصفحة الحالية ابحث بشكل مباشر
+    if(!s){
+      const d2=await apiFetch(`/students?limit=1&q=${id}`);
+      s=d2.students?.[0];
+    }
+    if(!s)return;
+
+    // تعبئة Modal التعديل
+    document.getElementById('efName').value      = s.name;
+    document.getElementById('efNat').value       = s.nationalId;
+    document.getElementById('efPhone').value     = s.phone;
+    document.getElementById('efEmail').value     = s.email||'';
+    document.getElementById('efEmp').value       = s.employer||'';
+    document.getElementById('efJoin').value      = s.joinDate?s.joinDate.slice(0,10):'';
+    document.getElementById('efProgStart').value = s.programStartDate?s.programStartDate.slice(0,10):'';
+    document.getElementById('efPayType').value   = s.paymentType||'كاش';
+    document.getElementById('efPrice').value     = s.programPrice||0;
+    document.getElementById('efPayMeth').value   = s.paymentMethod||'شبكة';
+    document.getElementById('efLastPay').value   = s.lastPayment?s.lastPayment.slice(0,10):'';
+    document.getElementById('efPayCnt').value    = s.paymentCount||0;
+    document.getElementById('efHasArr').checked  = !!s.hasArrears;
+    document.getElementById('efArrAmt').value    = s.arrearsAmount||0;
+    document.getElementById('efArrAmt').disabled = !s.hasArrears;
+    document.getElementById('efPending').checked = !!s.pendingApproval;
+    document.getElementById('efNotes').value     = s.notes||'';
+    document.getElementById('editErr').style.display='none';
+
     editId=id;
-    document.getElementById('fTitle').textContent='✏️ تعديل بيانات الطالب';
-    document.getElementById('subBtn').textContent='💾 حفظ التعديل';
-    if(folded)foldF();
-    document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
+    document.getElementById('editModal').classList.add('open');
   }catch(e){alert2(e.message,'error');}
+}
+
+// معالج نموذج التعديل
+document.getElementById('editForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const btn=document.getElementById('editSaveBtn');
+  const err=document.getElementById('editErr');
+  btn.disabled=true;btn.textContent='⏳ جارٍ الحفظ...';
+  err.style.display='none';
+  const hasArr=document.getElementById('efHasArr').checked;
+  const body={
+    name:            document.getElementById('efName').value.trim(),
+    phone:           document.getElementById('efPhone').value.trim(),
+    email:           document.getElementById('efEmail').value.trim(),
+    employer:        document.getElementById('efEmp').value.trim(),
+    joinDate:        document.getElementById('efJoin').value||null,
+    programStartDate:document.getElementById('efProgStart').value||null,
+    paymentType:     document.getElementById('efPayType').value,
+    programPrice:    +document.getElementById('efPrice').value||0,
+    paymentMethod:   document.getElementById('efPayMeth').value,
+    lastPayment:     document.getElementById('efLastPay').value||null,
+    paymentCount:    +document.getElementById('efPayCnt').value||0,
+    hasArrears:      hasArr,
+    arrearsAmount:   hasArr?(+document.getElementById('efArrAmt').value||0):0,
+    pendingApproval: document.getElementById('efPending').checked,
+    notes:           document.getElementById('efNotes').value.trim(),
+  };
+  try{
+    await apiFetch(`/students/${editId}`,{method:'PATCH',body});
+    closeM('editModal');
+    toast('تم حفظ التعديل ✓');
+    editId=null;
+    load();
+  }catch(e){
+    err.textContent=e.message;
+    err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='💾 حفظ التعديل';
+  }
+});
+
+function toggleEfArr(){
+  const c=document.getElementById('efHasArr');
+  const a=document.getElementById('efArrAmt');
+  a.disabled=!c.checked;
+  if(!c.checked)a.value='';
 }
 
 async function delS(id){

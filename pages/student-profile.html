@@ -171,7 +171,7 @@
         <div class="hero-actions">
           <button class="btn btn-primary btn-sm" onclick="openPayModal()">💰 تسجيل دفعة</button>
           <button class="btn btn-ghost   btn-sm" onclick="printReport()">🖨️ طباعة PDF</button>
-          <a class="btn btn-ghost btn-sm" id="editBtn" href="#">✏️ تعديل البيانات</a>
+          <button class="btn btn-ghost btn-sm" id="editBtn" onclick="openEditModal()">✏️ تعديل البيانات</button>
           <button class="btn btn-danger  btn-sm" id="refundBtn" onclick="confirmRefund()" style="display:none">↩️ استرداد المبلغ</button>
         </div>
       </div>
@@ -404,7 +404,7 @@ function renderProfile(s) {
   }
 
   // رابط التعديل
-  document.getElementById('editBtn').href = `students.html?edit=${s._id}`;
+  // زر تعديل — يفتح modal
 
   // الملخص المالي
   const price  = s.programPrice || 0;
@@ -695,6 +695,70 @@ function printReport() {
 
 /* ══ مساعدات ══ */
 function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+function closeEditModal() { document.getElementById('profileEditModal').classList.remove('open'); }
+
+/* ══ Modal التعديل في صفحة الملف ══ */
+function openEditModal() {
+  if (!stuData) return;
+  const s = stuData;
+  document.getElementById('pefName').value      = s.name;
+  document.getElementById('pefPhone').value     = s.phone;
+  document.getElementById('pefEmail').value     = s.email||'';
+  document.getElementById('pefEmp').value       = s.employer||'';
+  document.getElementById('pefJoin').value      = s.joinDate?s.joinDate.slice(0,10):'';
+  document.getElementById('pefProgStart').value = s.programStartDate?s.programStartDate.slice(0,10):'';
+  document.getElementById('pefPayType').value   = s.paymentType||'كاش';
+  document.getElementById('pefPrice').value     = s.programPrice||0;
+  document.getElementById('pefPayMeth').value   = s.paymentMethod||'شبكة';
+  document.getElementById('pefLastPay').value   = s.lastPayment?s.lastPayment.slice(0,10):'';
+  document.getElementById('pefPayCnt').value    = s.paymentCount||0;
+  document.getElementById('pefHasArr').checked  = !!s.hasArrears;
+  document.getElementById('pefArrAmt').value    = s.arrearsAmount||0;
+  document.getElementById('pefArrAmt').disabled = !s.hasArrears;
+  document.getElementById('pefPending').checked = !!s.pendingApproval;
+  document.getElementById('pefNotes').value     = s.notes||'';
+  document.getElementById('pefEditErr').style.display = 'none';
+  document.getElementById('profileEditModal').classList.add('open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pefEditForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('pefSaveBtn');
+    const err = document.getElementById('pefEditErr');
+    btn.disabled = true; btn.textContent = '⏳ جارٍ الحفظ...';
+    err.style.display = 'none';
+    const hasArr = document.getElementById('pefHasArr').checked;
+    const body = {
+      name:             document.getElementById('pefName').value.trim(),
+      phone:            document.getElementById('pefPhone').value.trim(),
+      email:            document.getElementById('pefEmail').value.trim(),
+      employer:         document.getElementById('pefEmp').value.trim(),
+      joinDate:         document.getElementById('pefJoin').value||null,
+      programStartDate: document.getElementById('pefProgStart').value||null,
+      paymentType:      document.getElementById('pefPayType').value,
+      programPrice:     +document.getElementById('pefPrice').value||0,
+      paymentMethod:    document.getElementById('pefPayMeth').value,
+      lastPayment:      document.getElementById('pefLastPay').value||null,
+      paymentCount:     +document.getElementById('pefPayCnt').value||0,
+      hasArrears:       hasArr,
+      arrearsAmount:    hasArr?(+document.getElementById('pefArrAmt').value||0):0,
+      pendingApproval:  document.getElementById('pefPending').checked,
+      notes:            document.getElementById('pefNotes').value.trim(),
+    };
+    try {
+      await apiFetch(`/students/${stuId}`, { method:'PATCH', body });
+      closeEditModal();
+      toast('تم حفظ التعديل ✓');
+      loadProfile(); // إعادة تحميل الصفحة
+    } catch(e) {
+      err.textContent = e.message;
+      err.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = '💾 حفظ التعديل';
+    }
+  });
+});
 
 function toast(msg, type='s') {
   const el = document.createElement('div');
@@ -715,5 +779,78 @@ function showError(msg) {
 /* ══ تشغيل ══ */
 loadProfile();
 </script>
+
+<!-- ══ Modal التعديل ══ -->
+<div class="modal-overlay" id="profileEditModal">
+  <div class="modal" style="width:min(680px,96vw);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:var(--bg2);padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <h3>✏️ تعديل بيانات الطالب</h3>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <form id="pefEditForm" autocomplete="off">
+
+      <!-- البيانات الشخصية -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:6px;margin-bottom:12px;border-right:3px solid var(--accent)">👤 البيانات الشخصية</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <div class="field" style="grid-column:1/-1"><label>الاسم الرباعي <span style="color:var(--danger)">*</span></label><input id="pefName" required/></div>
+          <div class="field"><label>رقم الجوال</label><input id="pefPhone" maxlength="12" inputmode="tel"/></div>
+          <div class="field"><label>البريد الإلكتروني</label><input id="pefEmail" type="email"/></div>
+          <div class="field"><label>جهة العمل</label><input id="pefEmp"/></div>
+          <div class="field"><label>تاريخ الانضمام</label><input id="pefJoin" type="date"/></div>
+        </div>
+      </div>
+
+      <!-- البرنامج -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:6px;margin-bottom:12px;border-right:3px solid var(--accent)">📚 البرنامج الدراسي</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div class="field"><label>نوع الدفع</label>
+            <select id="pefPayType"><option value="كاش">💵 كاش</option><option value="أقساط">📆 أقساط</option></select>
+          </div>
+          <div class="field"><label>السعر (ريال)</label><input id="pefPrice" type="number" min="0"/></div>
+          <div class="field"><label>تاريخ بداية البرنامج</label><input id="pefProgStart" type="date"/></div>
+        </div>
+      </div>
+
+      <!-- السداد -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:6px;margin-bottom:12px;border-right:3px solid var(--accent)">💰 بيانات السداد</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div class="field"><label>طريقة الدفع</label>
+            <select id="pefPayMeth"><option value="شبكة">💳 شبكة</option><option value="نقدي">💵 نقدي</option><option value="تحويل">🏦 تحويل</option></select>
+          </div>
+          <div class="field"><label>تاريخ آخر سداد</label><input id="pefLastPay" type="date"/></div>
+          <div class="field"><label>عدد مرات السداد</label><input id="pefPayCnt" type="number" min="0"/></div>
+          <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center">
+            <label class="checkbox-lbl"><input type="checkbox" id="pefHasArr" onchange="document.getElementById('pefArrAmt').disabled=!this.checked;if(!this.checked)document.getElementById('pefArrAmt').value='';"/><span>عليه متأخرات</span></label>
+            <input id="pefArrAmt" placeholder="قيمة المتأخرات (ريال)" disabled inputmode="numeric"/>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="checkbox-lbl"><input type="checkbox" id="pefPending"/><span>⏳ في انتظار موافقة جهة العمل</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--accent);padding:8px 12px;background:rgba(47,129,247,.06);border-radius:6px;margin-bottom:12px;border-right:3px solid var(--accent)">📝 ملاحظات</div>
+        <div class="field"><textarea id="pefNotes" rows="2"></textarea></div>
+      </div>
+
+      <div class="alert alert-error" id="pefEditErr" style="display:none;margin-bottom:12px"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--bg2)">
+        <button type="button" class="btn btn-ghost" onclick="closeEditModal()">إلغاء</button>
+        <button type="submit" class="btn btn-primary" id="pefSaveBtn">💾 حفظ التعديل</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:var(--radius);font-weight:600;z-index:3000;animation:ta 3.2s forwards;white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.45)}
+.toast.s{background:var(--success);color:#fff}.toast.e{background:var(--danger);color:#fff}
+@keyframes ta{0%{opacity:0;top:35px}12%{opacity:1;top:20px}80%{opacity:1}100%{opacity:0;top:10px}}
+</style>
 </body>
 </html>

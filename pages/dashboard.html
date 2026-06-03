@@ -317,7 +317,14 @@ async function toggleProg(id, newState) {
 
 function closeM(id) { document.getElementById(id).classList.remove('open'); }
 
-loadAll();
+// دعم ?tab=programs من الشريط الجانبي في students.html
+const urlTab = new URLSearchParams(window.location.search).get('tab');
+if (urlTab === 'programs' && user?.role === 'org_admin') {
+  loadAll();
+  setTimeout(() => showTab('programs'), 100);
+} else {
+  loadAll();
+}
 </script>
 </body>
 </html>
